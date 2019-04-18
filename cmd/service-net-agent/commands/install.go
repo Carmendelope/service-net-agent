@@ -2,6 +2,10 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
+// For Windows, we have a separate installer
+
+// +build !windows
+
 package commands
 
 import (
