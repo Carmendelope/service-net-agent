@@ -32,5 +32,5 @@ func (j *Joiner) Validate() (derrors.Error) {
 func (j *Joiner) Run() (derrors.Error) {
 	j.Config.Print()
 
-	return nil
+	return derrors.NewUnimplementedError("join not implemented")
 }

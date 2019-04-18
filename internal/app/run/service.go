@@ -30,5 +30,5 @@ func (s *Service) Validate() (derrors.Error) {
 func (s *Service) Run() (derrors.Error) {
 	s.Config.Print()
 
-	return nil
+	return derrors.NewUnimplementedError("run not implemented")
 }

@@ -35,5 +35,5 @@ func (i *Installer) Print() {
 func (i *Installer) Run() (derrors.Error) {
 	i.Print()
 
-	return nil
+	return derrors.NewUnimplementedError("install not implemented")
 }
