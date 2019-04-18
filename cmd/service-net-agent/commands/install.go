@@ -21,7 +21,7 @@ var installCmd = &cobra.Command{
 	Long: "Install Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		Setup(cmd)
-		Install()
+		onInstall()
 	},
 }
 
@@ -29,10 +29,15 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 }
 
-func Install() {
+func onInstall() {
 	log.Info().Msg("Starting installation")
 
-	err := installer.Run()
+	err := installer.Validate()
+	if err != nil {
+		Fail(err, "invalid configuration")
+	}
+
+	err = installer.Run()
 	if err != nil {
 		Fail(err, "installation failed")
 	}

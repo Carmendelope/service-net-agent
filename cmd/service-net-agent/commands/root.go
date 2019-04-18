@@ -23,7 +23,7 @@ import (
 
 var debugLevel bool
 var consoleLogging bool
-var rootConfig = &config.Config{}
+var rootConfig = config.NewConfig()
 
 var rootCmd = &cobra.Command{
 	Use:   "service-net-agent",
@@ -40,8 +40,13 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringVar(&rootConfig.Path, "path", defaults.Path, "Agent root path")
 	rootCmd.MarkPersistentFlagFilename("path")
+
 	rootCmd.PersistentFlags().StringVar(&rootConfig.ConfigFile, "config", filepath.Join(rootConfig.Path, defaults.ConfigFile), "Configuration file")
 	rootCmd.MarkPersistentFlagFilename("config")
+
+	rootCmd.PersistentFlags().String("address", "", "Edge Controller address")
+	rootConfig.BindPFlag("controller.address", rootCmd.PersistentFlags().Lookup("address"))
+
 	rootCmd.PersistentFlags().BoolVar(&debugLevel, "debug", false, "Set debug level")
 	rootCmd.PersistentFlags().BoolVar(&consoleLogging, "consoleLogging", false, "Pretty print logging")
 }
@@ -85,5 +90,5 @@ func SetupLogging() {
 
 func Fail(err derrors.Error, msg string) {
 	log.Debug().Str("err", err.DebugReport()).Msg("debug report")
-	log.Fatal().Err(err).Msg("failed to read configuration file")
+	log.Fatal().Err(err).Msg(msg)
 }
