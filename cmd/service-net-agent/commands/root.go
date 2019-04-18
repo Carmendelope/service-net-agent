@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"github.com/nalej/derrors"
+
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 
@@ -16,11 +18,12 @@ import (
 
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 var debugLevel bool
 var consoleLogging bool
-var configuration = &config.Config{}
+var rootConfig = &config.Config{}
 
 var rootCmd = &cobra.Command{
 	Use:   "service-net-agent",
@@ -29,13 +32,16 @@ var rootCmd = &cobra.Command{
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup()
+		Setup(cmd)
 		cmd.Help()
 	},
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configuration.ConfigFile, "config", defaults.ConfigFile, "Configuration file")
+	rootCmd.PersistentFlags().StringVar(&rootConfig.Path, "path", defaults.Path, "Agent root path")
+	rootCmd.MarkPersistentFlagFilename("path")
+	rootCmd.PersistentFlags().StringVar(&rootConfig.ConfigFile, "config", filepath.Join(rootConfig.Path, defaults.ConfigFile), "Configuration file")
+	rootCmd.MarkPersistentFlagFilename("config")
 	rootCmd.PersistentFlags().BoolVar(&debugLevel, "debug", false, "Set debug level")
 	rootCmd.PersistentFlags().BoolVar(&consoleLogging, "consoleLogging", false, "Pretty print logging")
 }
@@ -49,14 +55,19 @@ func Execute() {
 }
 
 // Initialize the agent
-func Setup() {
+func Setup(cmd *cobra.Command) {
 	// Logging
 	SetupLogging()
 
-	// Config file
-	err := configuration.Read()
+	// If config file is not specifically set, we should look in root path
+	if !cmd.Flag("config").Changed {
+		rootConfig.ConfigFile = filepath.Join(rootConfig.Path, defaults.ConfigFile)
+	}
+
+	// Handle configuration
+	err := rootConfig.Read()
 	if err != nil {
-		log.Fatal().Err(err).Str("config", configuration.ConfigFile).Msg("failed to read configuration file")
+		Fail(err, "failed to read configuration file")
 	}
 }
 
@@ -70,4 +81,9 @@ func SetupLogging() {
 	if consoleLogging {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
+}
+
+func Fail(err derrors.Error, msg string) {
+	log.Debug().Str("err", err.DebugReport()).Msg("debug report")
+	log.Fatal().Err(err).Msg("failed to read configuration file")
 }
