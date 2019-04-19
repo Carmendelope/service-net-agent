@@ -9,5 +9,5 @@ package defaults
 const (
 	Path string = "/opt/nalej"
 	ConfigFile string = "etc/agent.yaml"
-	InstallPath string = "bin"
+	BinDir string = "bin"
 )

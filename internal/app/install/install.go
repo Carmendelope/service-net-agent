@@ -7,9 +7,13 @@ package install
 // Agent installer
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/version"
 
 	"github.com/rs/zerolog/log"
@@ -35,5 +39,26 @@ func (i *Installer) Print() {
 func (i *Installer) Run() (derrors.Error) {
 	i.Print()
 
-	return derrors.NewUnimplementedError("install not implemented")
+	// Create destination
+	destDir := filepath.Join(i.Config.Path, defaults.BinDir)
+	err := os.MkdirAll(destDir, 0755)
+	if err != nil {
+		return derrors.NewPermissionDeniedError("unable to create installation destination", err).WithParams(destDir)
+	}
+
+	// Copy myself
+	bin, err := os.Executable()
+	if err != nil {
+		return derrors.NewPermissionDeniedError("unable to determine agent binary location", err)
+	}
+
+	err = copyFile(bin, destDir)
+	if err != nil {
+		return derrors.NewPermissionDeniedError("unable to copy file", err).WithParams(bin, destDir)
+	}
+
+	// Install system services
+	// TBD
+
+	return nil
 }
