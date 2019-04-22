@@ -1,3 +1,5 @@
+// +build linux
+
 /*
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
@@ -14,6 +16,7 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
+	"github.com/nalej/service-net-agent/pkg/svcmgr"
 	"github.com/nalej/service-net-agent/version"
 
 	"github.com/rs/zerolog/log"
@@ -52,13 +55,27 @@ func (i *Installer) Run() (derrors.Error) {
 		return derrors.NewPermissionDeniedError("unable to determine agent binary location", err)
 	}
 
-	err = copyFile(bin, destDir)
+	// Destination is destination dir plus filename
+	dest := filepath.Join(destDir, filepath.Base(bin))
+
+	err = copyFile(dest, bin)
 	if err != nil {
 		return derrors.NewPermissionDeniedError("unable to copy file", err).WithParams(bin, destDir)
 	}
 
 	// Install system services
-	// TBD
+	svcInstaller, derr := svcmgr.NewInstaller(defaults.AgentName)
+	if derr != nil {
+		return derr
+	}
+
+	// TBD args - configpath
+
+	derr = svcInstaller.Install(i.Config.Path, dest, []string{}, defaults.AgentDescription)
+	if derr != nil {
+		return derr
+	}
+	// TBD Enable
 
 	return nil
 }

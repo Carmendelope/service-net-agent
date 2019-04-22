@@ -2,6 +2,26 @@
 
 
 [[projects]]
+  digest = "1:dfa1bec57e6d45d5af6acb0142cb4ef1ad5bc512c60816205a5acbaef5afe13b"
+  name = "github.com/coreos/go-systemd"
+  packages = [
+    "daemon",
+    "unit",
+    "util",
+  ]
+  pruneopts = ""
+  revision = "95778dfbb74eb7e4dbaf43bf7d71809650ef8076"
+  version = "v19"
+
+[[projects]]
+  digest = "1:b168b5f54103bbb328987b268867f656c4536b70f7b6fec4726a4619b0ebb5f0"
+  name = "github.com/coreos/pkg"
+  packages = ["dlopen"]
+  pruneopts = ""
+  revision = "97fdf19511ea361ae1c100dd393cc47f8dcfa1e1"
+  version = "v4"
+
+[[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -167,6 +187,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/coreos/go-systemd/daemon",
+    "github.com/coreos/go-systemd/unit",
+    "github.com/coreos/go-systemd/util",
     "github.com/nalej/derrors",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",

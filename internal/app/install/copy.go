@@ -10,15 +10,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 )
 
-func copyFile(src, destDir string) error {
-	// Destination is destination dir plus filename
-	dest := filepath.Join(destDir, filepath.Base(src))
-
+func copyFile(dest, src string) error {
 	log.Debug().Str("src", src).Str("dest", dest).Msg("Copying file")
 
 	srcStat, err := os.Stat(src)
@@ -37,7 +33,7 @@ func copyFile(src, destDir string) error {
 	defer srcFile.Close()
 
 	// Create file with the same permissions as source
-	destFile, err := os.OpenFile(dest, os.O_WRONLY | os.O_CREATE, srcStat.Mode())
+	destFile, err := os.OpenFile(dest, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, srcStat.Mode())
 	if err != nil {
 		return err
 	}
