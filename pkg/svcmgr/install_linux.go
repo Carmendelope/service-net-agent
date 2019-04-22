@@ -20,9 +20,10 @@ import (
 
 type Installer struct {
 	name string
+	root string
 }
 
-func NewInstaller(name string) (*Installer, derrors.Error) {
+func NewInstaller(name, root string) (*Installer, derrors.Error) {
 	derr := checkSystem() // Won't install if we're not running systemd
 	if derr != nil {
 		return nil, derr
@@ -30,13 +31,14 @@ func NewInstaller(name string) (*Installer, derrors.Error) {
 
 	i := &Installer{
 		name: name,
+		root: root,
 	}
 
 	return i, nil
 }
 
 // Install a service
-func (i *Installer) Install(root, bin string, args []string, desc ...string) (derrors.Error) {
+func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.Error) {
 	log.Debug().Str("name", i.name).Str("bin", bin).Msg("installing service")
 
 	// Check if exists and executable
@@ -55,7 +57,7 @@ func (i *Installer) Install(root, bin string, args []string, desc ...string) (de
 	}
 
 	// Determine unit filename
-	filename, derr := getUnitFilename(i.name, root)
+	filename, derr := getUnitFilename(i.name, i.root)
 	if derr != nil {
 		return derr
 	}
@@ -83,5 +85,19 @@ func (i *Installer) Install(root, bin string, args []string, desc ...string) (de
 
 // Enable system service
 func (i *Installer) Enable() (derrors.Error) {
-	return nil
+	log.Debug().Str("name", i.name).Msg("enabling system service")
+
+	// Determine unit filename
+	filename, derr := getUnitFilename(i.name, i.root)
+	if derr != nil {
+		return derr
+	}
+
+	// Check if exists
+	_, err := os.Stat(filename)
+        if err != nil {
+                return derrors.NewNotFoundError("system service file not found").WithParams(filename)
+        }
+
+	return enableUnit(filename)
 }

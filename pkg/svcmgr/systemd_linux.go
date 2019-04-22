@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/dbus"
 	"github.com/coreos/go-systemd/unit"
 	"github.com/coreos/go-systemd/util"
 
@@ -76,6 +77,25 @@ func createUnitFile(desc, bin string, args []string) (io.Reader, derrors.Error) 
 	reader := unit.Serialize(unitOpts)
 
 	return reader, nil
+}
+
+func enableUnit(unit string) derrors.Error {
+	conn, err := dbus.NewSystemdConnection()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer conn.Close()
+
+	_, status, err := conn.EnableUnitFiles([]string{unit}, false /* not runtime-only */, true /* force */)
+	if err != nil {
+		return derrors.NewInternalError("unable to enable system service", err)
+	}
+
+	for _, s := range(status) {
+		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
+	}
+
+	return nil
 }
 
 func notify(state string) {

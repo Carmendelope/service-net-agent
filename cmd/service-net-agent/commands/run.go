@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/nalej/service-net-agent/internal/app/run"
+	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/pkg/svcmgr"
 
 	"github.com/rs/zerolog/log"
@@ -45,7 +46,7 @@ func onRun() {
 		Fail(err, "invalid configuration")
 	}
 
-	manager, err := svcmgr.NewManager("service-net-agent", service)
+	manager, err := svcmgr.NewManager(defaults.AgentName, service)
 	if err != nil {
 		Fail(err, "unable to create service manager")
 	}

@@ -64,7 +64,7 @@ func (i *Installer) Run() (derrors.Error) {
 	}
 
 	// Install system services
-	svcInstaller, derr := svcmgr.NewInstaller(defaults.AgentName)
+	svcInstaller, derr := svcmgr.NewInstaller(defaults.AgentName, i.Config.Path)
 	if derr != nil {
 		return derr
 	}
@@ -75,11 +75,15 @@ func (i *Installer) Run() (derrors.Error) {
 		"--config",
 		i.Config.ConfigFile,
 	}
-	derr = svcInstaller.Install(i.Config.Path, dest, args, defaults.AgentDescription)
+	derr = svcInstaller.Install(dest, args, defaults.AgentDescription)
 	if derr != nil {
 		return derr
 	}
-	// TBD Enable
+
+	derr = svcInstaller.Enable()
+	if derr != nil {
+		return derr
+	}
 
 	return nil
 }
