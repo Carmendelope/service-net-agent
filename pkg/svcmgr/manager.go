@@ -45,15 +45,20 @@ func NewManager(name string, runner Runner) (*Manager, derrors.Error) {
 }
 
 // Start
-func (m *Manager) Run() derrors.Error {
+func (m *Manager) Run(asService bool) derrors.Error {
 	// If we're not a service, no management is needed
-	if !runningAsService() {
+	if !asService {
 		return m.runner.Run()
+	}
+
+	derr := checkSystem()
+	if derr != nil {
+		return derr
 	}
 
 	log.Info().Str("name", m.Name).Msg("starting service")
 
-	derr := m.Implementation.Run()
+	derr = m.Implementation.Run()
 	if derr != nil {
 		return derrors.NewInternalError("error running service", derr)
 	}

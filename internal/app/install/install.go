@@ -69,9 +69,13 @@ func (i *Installer) Run() (derrors.Error) {
 		return derr
 	}
 
-	// TBD args - configpath
-
-	derr = svcInstaller.Install(i.Config.Path, dest, []string{}, defaults.AgentDescription)
+	args := []string{
+		"run",
+		"--service",
+		"--config",
+		i.Config.ConfigFile,
+	}
+	derr = svcInstaller.Install(i.Config.Path, dest, args, defaults.AgentDescription)
 	if derr != nil {
 		return derr
 	}

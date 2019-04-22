@@ -22,11 +22,6 @@ type Implementation struct {
 }
 
 func NewImplementation(runner Runner) (*Implementation, derrors.Error) {
-	derr := checkSystem()
-	if derr != nil {
-		return nil, derr
-	}
-
 	i := &Implementation{
 		runner: runner,
 	}
@@ -63,7 +58,8 @@ func (i *Implementation) Run() derrors.Error {
 			i.runner.Stop()
 		case err := <-errChan:
 			if err != nil {
-				return derrors.NewInternalError("error running service", err)
+				log.Error().Err(err).Msg("service returned error")
+				return derrors.NewInternalError("service returned error", err)
 			}
 			return nil
 		}

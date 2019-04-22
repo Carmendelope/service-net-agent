@@ -28,12 +28,7 @@ func (i *Implementation) Run() derrors.Error {
 	return derrors.NewUnimplementedError("starting as service not supported").WithParams(build.Default.GOOS)
 }
 
-// On unsupported systems we never run as service
-func runningAsService() bool {
-	return false
-}
-
 // On unsupported systems, the system services are never OK
-func checkSystem() bool {
-	return false
+func checkSystem() derrors.Error {
+	return derrors.NewUnimplementedError("starting as service not supported").WithParams(build.Default.GOOS)
 }

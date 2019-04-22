@@ -16,6 +16,8 @@ var service = &run.Service{
 	Config: rootConfig,
 }
 
+var runAsService bool
+
 var runCmd = &cobra.Command{
 	Use: "run",
 	Short: "Start Service Net Agent",
@@ -27,6 +29,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
+	runCmd.Flags().BoolVar(&runAsService, "service", false, "Run as system service where supported")
+
 	runCmd.Flags().Int("interval", 30, "Heartbeat interval")
 	rootConfig.BindPFlag("agent.interval", runCmd.Flags().Lookup("interval"))
 
@@ -46,7 +50,7 @@ func onRun() {
 		Fail(err, "unable to create service manager")
 	}
 
-	err = manager.Run()
+	err = manager.Run(runAsService)
 	if err != nil {
 		Fail(err, "run failed")
 	}

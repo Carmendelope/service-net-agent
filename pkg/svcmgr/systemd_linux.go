@@ -115,13 +115,3 @@ func checkSystem() derrors.Error {
 	}
 	return nil
 }
-
-func runningAsService() bool {
-	asService, err := util.RunningFromSystemService()
-	if err != nil {
-		log.Warn().Err(err).Msg("unable to determine if process is running as system service - assuming no")
-		return false
-	}
-	return asService
-}
-
