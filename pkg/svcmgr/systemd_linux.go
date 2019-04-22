@@ -135,3 +135,32 @@ func checkSystem() derrors.Error {
 	}
 	return nil
 }
+
+func Start(servicename string) derrors.Error {
+	conn, err := dbus.NewSystemdConnection()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer conn.Close()
+
+	msgChan := make(chan string, 1)
+	unit := fmt.Sprintf("%s.%s", servicename, systemDUnitExt)
+	_, err = conn.StartUnit(unit, "replace", msgChan)
+	if err != nil {
+		return derrors.NewInternalError("failed to request start from system service manager", err).WithParams(unit)
+	}
+
+	msg := <-msgChan
+	switch msg {
+	case "done":
+		log.Info().Msg("service started")
+	case "canceled", "timeout", "failed":
+		log.Error().Str("reason", msg).Msg("start failed")
+	case "dependency":
+		log.Error().Msg("service not started because of a failed dependency")
+	case "skipped":
+		log.Warn().Msg("service skipped; service not applicable to currently running units")
+	}
+
+	return nil
+}

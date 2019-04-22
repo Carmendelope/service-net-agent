@@ -21,8 +21,8 @@ var runAsService bool
 
 var runCmd = &cobra.Command{
 	Use: "run",
-	Short: "Start Service Net Agent",
-	Long: "Start Service Net Agent",
+	Short: "Run Service Net Agent",
+	Long: "Run Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		Setup(cmd)
 		onRun()

@@ -10,6 +10,8 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Service struct {
@@ -32,7 +34,11 @@ func (s *Service) Validate() (derrors.Error) {
 func (s *Service) Run() (derrors.Error) {
 	s.Config.Print()
 
-	return derrors.NewUnimplementedError("run not implemented")
+	log.Info().Msg("running")
+	select {
+	case <-s.stopChan:
+		return nil
+	}
 }
 
 func (s *Service) errChanRun(errChan chan<- derrors.Error) {
