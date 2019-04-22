@@ -1,2 +1,2 @@
-# service-net-agent-linux
-Service Net Agent for Linux environments
+# service-net-agent
+Service Net Agent
