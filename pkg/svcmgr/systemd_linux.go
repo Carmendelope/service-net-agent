@@ -95,6 +95,12 @@ func enableUnit(unit string) derrors.Error {
 		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
 	}
 
+	// Reload in case we've overwritten an earlier install
+	err = conn.Reload()
+	if err != nil {
+		return derrors.NewInternalError("unable to reload system service files", err)
+	}
+
 	return nil
 }
 
