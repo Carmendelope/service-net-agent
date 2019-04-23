@@ -9,7 +9,12 @@ package join
 import (
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/grpc-edge-controller-go"
+
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+	"github.com/nalej/service-net-agent/internal/pkg/inventory"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Joiner struct {
@@ -31,6 +36,25 @@ func (j *Joiner) Validate() (derrors.Error) {
 
 func (j *Joiner) Run() (derrors.Error) {
 	j.Config.Print()
+
+	// Gather inventory
+	inv, derr := inventory.NewInventory()
+	if derr != nil {
+		return derr
+	}
+	log.Info().Interface("inventory", inv).Msg("")
+
+	// Join EC - get agent token
+	request := &grpc_edge_controller_go.AgentJoinRequest{
+		Os: inv.Os,
+		Hardware: inv.Hardware,
+		Storage: inv.Storage,
+	}
+	_ = request
+	// TBD - create client, send request
+
+	// Write config - store agent token in config
+	// TBD
 
 	return derrors.NewUnimplementedError("join not implemented")
 }
