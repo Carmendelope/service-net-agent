@@ -9,8 +9,6 @@ package join
 import (
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-edge-controller-go"
-
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/inventory"
 
@@ -21,6 +19,7 @@ type Joiner struct {
 	Config *config.Config
 
 	Token string
+	Labels map[string]string
 }
 
 func (j *Joiner) Validate() (derrors.Error) {
@@ -42,15 +41,17 @@ func (j *Joiner) Run() (derrors.Error) {
 	if derr != nil {
 		return derr
 	}
-	log.Info().Interface("inventory", inv).Msg("system info")
+
+	request := inv.GetRequest()
+
+	// Add command line-specified labels
+	for k, v := range(j.Labels) {
+		request.Labels[k] = v
+	}
+
+	log.Info().Interface("inventory", request).Msg("system info")
 
 	// Join EC - get agent token
-	request := &grpc_edge_controller_go.AgentJoinRequest{
-		Os: inv.Os,
-		Hardware: inv.Hardware,
-		Storage: inv.Storage,
-	}
-	_ = request
 	// TBD - create client, send request
 
 	// Write config - store agent token in config
