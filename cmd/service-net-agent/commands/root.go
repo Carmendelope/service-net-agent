@@ -26,8 +26,8 @@ var consoleLogging bool
 var rootConfig = config.NewConfig()
 
 var rootCmd = &cobra.Command{
-	Use:   "service-net-agent",
-	Short: "Nalej Service Net Agent",
+	Use:   defaults.AgentName,
+	Short: defaults.AgentDescription,
 	Long:  `Nalej Service Net Agent joins resources to the Nalej Edge`,
 	Version: "unknown-version",
 

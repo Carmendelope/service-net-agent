@@ -12,7 +12,12 @@
 [[projects]]
   digest = "1:dfa1bec57e6d45d5af6acb0142cb4ef1ad5bc512c60816205a5acbaef5afe13b"
   name = "github.com/coreos/go-systemd"
-  packages = ["util"]
+  packages = [
+    "daemon",
+    "dbus",
+    "unit",
+    "util",
+  ]
   pruneopts = ""
   revision = "95778dfbb74eb7e4dbaf43bf7d71809650ef8076"
   version = "v19"
@@ -43,6 +48,14 @@
   pruneopts = ""
   revision = "97b6244175ae18ea6eef668034fd6565847501c9"
   version = "v1.2.4"
+
+[[projects]]
+  digest = "1:cc1255e2fef3819bfab3540277001e602892dd431ef9ab5499bcdbc425923d64"
+  name = "github.com/godbus/dbus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2ff6f7ffd60f0f2410b3105864bdd12c7894f844"
+  version = "v5.0.1"
 
 [[projects]]
   digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
@@ -366,6 +379,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/coreos/go-systemd/daemon",
+    "github.com/coreos/go-systemd/dbus",
+    "github.com/coreos/go-systemd/unit",
     "github.com/coreos/go-systemd/util",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-edge-controller-go",
