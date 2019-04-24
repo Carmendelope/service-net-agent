@@ -7,6 +7,7 @@ package client
 // Create client connection to Edge Controller
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -20,17 +21,20 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 type ConnectionOptions struct {
 	UseTLS bool
 	CACert string
 	Insecure bool
+	Token string
 }
 
 type AgentClient struct {
 	grpc_edge_controller_go.AgentClient
 	*grpc.ClientConn
+	token string
 }
 
 func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derrors.Error) {
@@ -80,7 +84,12 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 
 	client := grpc_edge_controller_go.NewAgentClient(conn)
 
-	return &AgentClient{client, conn}, nil
+	return &AgentClient{client, conn, opts.Token}, nil
+}
+
+func (c *AgentClient) GetContext() (context.Context) {
+	meta := metadata.New(map[string]string{"Authorization": c.token})
+	return metadata.NewOutgoingContext(context.Background(), meta)
 }
 
 // Add X509 certificate from a file to a pool

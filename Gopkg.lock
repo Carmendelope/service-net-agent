@@ -377,6 +377,7 @@
     "github.com/spf13/viper",
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
+    "google.golang.org/grpc/metadata",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

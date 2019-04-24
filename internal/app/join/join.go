@@ -7,8 +7,6 @@ package join
 // Join Agent to Nalej Edge
 
 import (
-	"context"
-
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/grpc-edge-controller-go"
@@ -54,6 +52,7 @@ func (j *Joiner) Run() (derrors.Error) {
 		UseTLS: j.Config.GetBool("controller.tls"),
 		CACert: j.Config.GetString("controller.cert"),
 		Insecure: j.Config.GetBool("controller.insecure"),
+		Token: j.Token,
 	}
 	client, derr := client.NewAgentClient(j.Config.GetString("controller.address"), opts)
 	if derr != nil {
@@ -62,7 +61,7 @@ func (j *Joiner) Run() (derrors.Error) {
 	defer client.Close()
 
 	// Send request and get agent token
-	response, err := client.AgentJoin(context.Background(), request)
+	response, err := client.AgentJoin(client.GetContext(), request)
 	if err != nil {
 		return derrors.NewUnavailableError("unable to send join request", err)
 	}
