@@ -10,6 +10,22 @@
   version = "1.0.0"
 
 [[projects]]
+  digest = "1:dfa1bec57e6d45d5af6acb0142cb4ef1ad5bc512c60816205a5acbaef5afe13b"
+  name = "github.com/coreos/go-systemd"
+  packages = ["util"]
+  pruneopts = ""
+  revision = "95778dfbb74eb7e4dbaf43bf7d71809650ef8076"
+  version = "v19"
+
+[[projects]]
+  digest = "1:b168b5f54103bbb328987b268867f656c4536b70f7b6fec4726a4619b0ebb5f0"
+  name = "github.com/coreos/pkg"
+  packages = ["dlopen"]
+  pruneopts = ""
+  revision = "97fdf19511ea361ae1c100dd393cc47f8dcfa1e1"
+  version = "v4"
+
+[[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -134,12 +150,12 @@
   version = "v0.0.2"
 
 [[projects]]
-  digest = "1:fd8c31cb115abf180fc5b44c43df8ba9e1bd64ad3ff5409dc89452a935451ae1"
+  digest = "1:24a1a952845f7d7e0d022ee5e6d71a701521a01023a02993b307f910643e55f1"
   name = "github.com/nalej/grpc-inventory-manager-go"
   packages = ["."]
   pruneopts = ""
-  revision = "4a77b9dd8e04eab4517e0684e511f6f7ccb36188"
-  version = "v0.0.1"
+  revision = "a67e06b289962043840e1ccf4b07d0f902231e18"
+  version = "v0.0.2"
 
 [[projects]]
   digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
@@ -242,7 +258,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a2a9a2c106855d5fd3b11383f7c591064a81f25ee0d9749524801f636e7f473a"
+  digest = "1:368c063ff749ce9640ae6b8b7ce31b863f351b3ce24687ddd78d3c005b9fe248"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -254,24 +270,26 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "afa5a82059c6356159f699d81beff22a81842231"
+  revision = "4829fb13d2c62012c17688fa7f629f371014946d"
 
 [[projects]]
   branch = "master"
-  digest = "1:65b26625b8071c34051fdc3933aa41aabba2172296f325428e3a6492b0e7691f"
+  digest = "1:b72df5366dd701537b3a2593c948330bce9cf6576fccdff9df28c0873876715d"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "953cdadca894cdc07be76fc99f95b40c28f06623"
+  revision = "18eb32c0e2f0c2bc8d17842ed4ad41486f349ad4"
 
 [[projects]]
-  digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
+  digest = "1:bac96bbcaaf8f81c72a1dd59aceaf7cb0b16b64ff0c45c32af78dc9218651e07"
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
     "internal/colltab",
     "internal/gen",
+    "internal/language",
+    "internal/language/compact",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
@@ -284,8 +302,8 @@
     "unicode/rangetable",
   ]
   pruneopts = ""
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "c942b20a5d85b458c4dce1589326051d85e25d6d"
+  version = "v0.3.1"
 
 [[projects]]
   branch = "master"
@@ -348,6 +366,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/coreos/go-systemd/util",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-edge-controller-go",
     "github.com/nalej/grpc-inventory-go",
@@ -356,6 +375,8 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

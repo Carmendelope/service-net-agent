@@ -25,3 +25,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/nalej/sysinfo"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "v1.20.1"
+
+[[constraint]]
+  name = "github.com/coreos/go-systemd"
+  version = "v19"

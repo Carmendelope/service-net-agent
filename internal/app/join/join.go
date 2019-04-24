@@ -7,8 +7,13 @@ package join
 // Join Agent to Nalej Edge
 
 import (
+	"context"
+
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/grpc-edge-controller-go"
+
+	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/internal/pkg/inventory"
@@ -38,10 +43,48 @@ func (j *Joiner) Validate() (derrors.Error) {
 func (j *Joiner) Run() (derrors.Error) {
 	j.Config.Print()
 
+	// Get join request with inventory
+	request, derr := j.getRequest()
+	if derr != nil {
+		return derr
+	}
+
+	// Create connection
+	opts := &client.ConnectionOptions{
+		UseTLS: j.Config.GetBool("controller.tls"),
+		CACert: j.Config.GetString("controller.cert"),
+		Insecure: j.Config.GetBool("controller.insecure"),
+	}
+	client, derr := client.NewAgentClient(j.Config.GetString("controller.address"), opts)
+	if derr != nil {
+		return derr
+	}
+	defer client.Close()
+
+	// Send request and get agent token
+	response, err := client.AgentJoin(context.Background(), request)
+	if err != nil {
+		return derrors.NewUnavailableError("unable to send join request", err)
+	}
+
+	// Store agent token in config
+	j.Config.Set("agent.token", response.GetToken())
+	j.Config.Set("agent.asset_id", response.GetAssetId())
+
+	// Write config
+	derr = j.Config.Write()
+	if derr != nil {
+		return derr
+	}
+
+	return nil
+}
+
+func (j *Joiner) getRequest() (*grpc_edge_controller_go.AgentJoinRequest, derrors.Error) {
 	// Gather inventory
 	inv, derr := inventory.NewInventory()
 	if derr != nil {
-		return derr
+		return nil, derr
 	}
 
 	request := inv.GetRequest()
@@ -55,15 +98,5 @@ func (j *Joiner) Run() (derrors.Error) {
 	request.AgentId = machine_id.AppSpecificMachineID(defaults.ApplicationID)
 	log.Info().Interface("inventory", request).Msg("system info")
 
-	// Join EC - get agent token
-	// TBD - create client, send request
-
-	// Write config - store agent token in config
-	j.Config.Set("agent.token", "TBD") // Replace with token from join response
-	derr = j.Config.Write()
-	if derr != nil {
-		return derr
-	}
-
-	return nil
+	return request, nil
 }
