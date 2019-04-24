@@ -10,7 +10,9 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/internal/pkg/inventory"
+	"github.com/nalej/service-net-agent/pkg/machine_id"
 
 	"github.com/rs/zerolog/log"
 )
@@ -49,6 +51,8 @@ func (j *Joiner) Run() (derrors.Error) {
 		request.Labels[k] = v
 	}
 
+	// Add agent ID
+	request.AgentId = machine_id.AppSpecificMachineID(defaults.ApplicationID)
 	log.Info().Interface("inventory", request).Msg("system info")
 
 	// Join EC - get agent token
