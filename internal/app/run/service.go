@@ -11,10 +11,10 @@ import (
 
 	"github.com/nalej/derrors"
 
-	_ "github.com/nalej/grpc-inventory-manager-go"
-	_ "github.com/nalej/grpc-inventory-go"
+	"github.com/nalej/grpc-inventory-manager-go"
+	"github.com/nalej/grpc-inventory-go"
 
-	_ "github.com/nalej/service-net-agent/internal/pkg/client"
+	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 
 	"github.com/rs/zerolog/log"
@@ -48,22 +48,19 @@ func (s *Service) Run() (derrors.Error) {
 	s.Config.Print()
 
 	interval := s.Config.GetDuration("agent.interval")
-	//assetId := s.Config.GetString("agent.asset_id")
+	assetId := s.Config.GetString("agent.asset_id")
 
 	// Create client connection
-	/*
 	client, derr := client.FromConfig(s.Config)
 	if derr != nil {
 		return derr
 	}
 	ctx := client.GetContext()
-	*/
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
 	// Send start message
 	log.Debug().Msg("sending start message to edge controller")
-	/*
 	request := &grpc_inventory_manager_go.AgentStartInfo{
 		AssetId: assetId,
 		// TBD - determine IP
@@ -77,7 +74,6 @@ func (s *Service) Run() (derrors.Error) {
 	beatRequest := &grpc_inventory_go.AssetId{
 		AssetId: assetId,
 	}
-	*/
 
 	// Start main heartbeat ticker
 	ticker := time.NewTicker(interval)
@@ -89,7 +85,6 @@ func (s *Service) Run() (derrors.Error) {
 		case <-ticker.C:
 			// Send heartbeat
 			log.Debug().Msg("sending heartbeat to edge controller")
-			/*
 			result, err := client.AgentCheck(ctx, beatRequest)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed sending heartbeat")
@@ -101,7 +96,6 @@ func (s *Service) Run() (derrors.Error) {
 				// TBD - Handle operation requests async (spawn goroutine)
 				log.Debug().Interface("operations", operations).Msg("received operation requests")
 			}
-			*/
 
 			// Record last succesfull run
 			s.lastBeat = time.Now()
