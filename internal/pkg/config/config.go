@@ -8,6 +8,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/nalej/derrors"
 
@@ -57,11 +58,17 @@ func (c *Config) Read() (derrors.Error) {
 }
 
 func (c *Config) Write() derrors.Error {
+	confDir := filepath.Dir(c.ConfigFile)
+	err := os.MkdirAll(confDir, 0755)
+	if err != nil {
+		return derrors.NewPermissionDeniedError("failed creating config dir", err).WithParams(confDir)
+	}
+
 	// Unstable version of viper allows to set filemode, we need
 	// to do it after writing. This does introduce a slight vulnerability
 	// as there is a small window during which the file can be read.
 	// This will be fixed with the next version of viper.
-	err := c.WriteConfig()
+	err = c.WriteConfig()
 	if err != nil {
 		return derrors.NewInternalError("failed writing config file", err).WithParams(c.ConfigFile)
 	}
