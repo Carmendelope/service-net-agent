@@ -386,6 +386,7 @@
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-edge-controller-go",
     "github.com/nalej/grpc-inventory-go",
+    "github.com/nalej/grpc-inventory-manager-go",
     "github.com/nalej/sysinfo",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",

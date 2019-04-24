@@ -23,6 +23,10 @@
   version = "v0.0.2"
 
 [[constraint]]
+  name = "github.com/nalej/grpc-inventory-manager-go"
+  version = "v0.0.2"
+
+[[constraint]]
   branch = "master"
   name = "github.com/nalej/sysinfo"
 

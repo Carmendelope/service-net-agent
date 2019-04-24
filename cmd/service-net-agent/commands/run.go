@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"time"
+
 	"github.com/nalej/service-net-agent/internal/app/run"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/pkg/svcmgr"
@@ -32,7 +34,7 @@ var runCmd = &cobra.Command{
 func init() {
 	runCmd.Flags().BoolVar(&runAsService, "service", false, "Run as system service where supported")
 
-	runCmd.Flags().Int("interval", 30, "Heartbeat interval")
+	runCmd.Flags().Duration("interval", time.Second * time.Duration(30), "Heartbeat interval")
 	rootConfig.BindPFlag("agent.interval", runCmd.Flags().Lookup("interval"))
 
 	rootCmd.AddCommand(runCmd)

@@ -48,13 +48,7 @@ func (j *Joiner) Run() (derrors.Error) {
 	}
 
 	// Create connection
-	opts := &client.ConnectionOptions{
-		UseTLS: j.Config.GetBool("controller.tls"),
-		CACert: j.Config.GetString("controller.cert"),
-		Insecure: j.Config.GetBool("controller.insecure"),
-		Token: j.Token,
-	}
-	client, derr := client.NewAgentClient(j.Config.GetString("controller.address"), opts)
+	client, derr := client.FromConfig(j.Config, j.Token)
 	if derr != nil {
 		return derr
 	}

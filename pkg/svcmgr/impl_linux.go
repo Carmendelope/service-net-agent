@@ -42,7 +42,7 @@ func (i *Implementation) Run() derrors.Error {
 	watchdogStopChan := make(chan bool, 1)
 	go i.watchdog(watchdogStopChan)
 
-        // Wait for termination signal
+	// Wait for termination signal
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGTERM)
 	signal.Notify(sigterm, syscall.SIGINT)
@@ -101,7 +101,7 @@ func (i *Implementation) watchdog(stopChan <-chan bool) {
 				log.Debug().Msg("main loop alive")
 				notifyAlive()
 			} else {
-				log.Warn().Msg("main loop not alive")
+				log.Warn().Msg("main loop dead")
 			}
 		}
 	}

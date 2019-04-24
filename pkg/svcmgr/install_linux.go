@@ -95,9 +95,9 @@ func (i *Installer) Enable() (derrors.Error) {
 
 	// Check if exists
 	_, err := os.Stat(filename)
-        if err != nil {
-                return derrors.NewNotFoundError("system service file not found").WithParams(filename)
-        }
+	if err != nil {
+		return derrors.NewNotFoundError("system service file not found").WithParams(filename)
+	}
 
 	return enableUnit(filename)
 }

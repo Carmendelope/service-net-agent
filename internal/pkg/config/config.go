@@ -9,6 +9,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/nalej/derrors"
 
@@ -84,6 +85,13 @@ func (c *Config) Write() derrors.Error {
 func (c *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
 	for _, key := range(c.AllKeys()) {
-		log.Info().Interface(key, c.Get(key)).Msg("configuration value")
+		val := c.Get(key)
+
+		// Don't print secrets
+		if strings.Contains(key, "token") {
+			val = interface{}(strings.Repeat("*", len(val.(string))))
+		}
+
+		log.Info().Interface(key, val).Msg("configuration value")
 	}
 }
