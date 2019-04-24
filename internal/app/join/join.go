@@ -42,7 +42,7 @@ func (j *Joiner) Run() (derrors.Error) {
 	if derr != nil {
 		return derr
 	}
-	log.Info().Interface("inventory", inv).Msg("")
+	log.Info().Interface("inventory", inv).Msg("system info")
 
 	// Join EC - get agent token
 	request := &grpc_edge_controller_go.AgentJoinRequest{
@@ -54,7 +54,11 @@ func (j *Joiner) Run() (derrors.Error) {
 	// TBD - create client, send request
 
 	// Write config - store agent token in config
-	// TBD
+	j.Config.Set("agent.token", "TBD") // Replace with token from join response
+	derr = j.Config.Write()
+	if derr != nil {
+		return derr
+	}
 
-	return derrors.NewUnimplementedError("join not implemented")
+	return nil
 }
