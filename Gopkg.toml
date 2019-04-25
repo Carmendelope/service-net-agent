@@ -16,7 +16,7 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-edge-controller-go"
-  version = "v0.0.2"
+  version = "v0.0.3"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-go"

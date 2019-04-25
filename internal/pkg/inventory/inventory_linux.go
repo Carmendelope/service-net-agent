@@ -55,6 +55,15 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		}
 	}
 
+	storageInfo := make([]*grpc_inventory_go.StorageHardwareInfo, 0, len(i.Storage))
+	for _, s := range(i.Storage) {
+		grpcStorage := &grpc_inventory_go.StorageHardwareInfo{
+			Type: fmt.Sprintf("%s %s", s.Vendor, s.Model),
+			TotalCapacity: int64(s.Size),
+		}
+		storageInfo = append(storageInfo, grpcStorage)
+	}
+
 	// Set labels
 	labels := map[string]string{}
 	labels["chassis_vendor"] = i.Chassis.Vendor
@@ -85,11 +94,7 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 			InstalledRam: int64(i.Memory.Size),
 			NetInterfaces: netInfo,
 		},
-		// TBD - make list
-		Storage: &grpc_inventory_go.StorageHardwareInfo{
-			Type: fmt.Sprintf("%s %s", i.Storage[0].Vendor, i.Storage[0].Model),
-			TotalCapacity: int64(i.Storage[0].Size),
-		},
+		Storage: storageInfo,
 	}
 
 	return request

@@ -12,7 +12,12 @@
 [[projects]]
   digest = "1:dfa1bec57e6d45d5af6acb0142cb4ef1ad5bc512c60816205a5acbaef5afe13b"
   name = "github.com/coreos/go-systemd"
-  packages = ["util"]
+  packages = [
+    "daemon",
+    "dbus",
+    "unit",
+    "util",
+  ]
   pruneopts = ""
   revision = "95778dfbb74eb7e4dbaf43bf7d71809650ef8076"
   version = "v19"
@@ -43,6 +48,14 @@
   pruneopts = ""
   revision = "97b6244175ae18ea6eef668034fd6565847501c9"
   version = "v1.2.4"
+
+[[projects]]
+  digest = "1:cc1255e2fef3819bfab3540277001e602892dd431ef9ab5499bcdbc425923d64"
+  name = "github.com/godbus/dbus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2ff6f7ffd60f0f2410b3105864bdd12c7894f844"
+  version = "v5.0.1"
 
 [[projects]]
   digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
@@ -134,12 +147,12 @@
   version = "v0.0.33"
 
 [[projects]]
-  digest = "1:e6a4843721cb3fafc4784c54bc3135bcbf9ed362eb8cf0b08258fcb548c83516"
+  digest = "1:04dd619dbf5b505ab15f55fd924eb45d496d0730be4570571b94100c3eee44ba"
   name = "github.com/nalej/grpc-edge-controller-go"
   packages = ["."]
   pruneopts = ""
-  revision = "136f122d1cd7f4e568eafedc6a570afd9edfd0d2"
-  version = "v0.0.2"
+  revision = "868b56d85fecb34dcc1a1697c00a75391f92476a"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:0244418fc7f34bd059fcbb2d152485380beb62568240cefd3ff738b5b5693d0c"
@@ -150,12 +163,12 @@
   version = "v0.0.2"
 
 [[projects]]
-  digest = "1:24a1a952845f7d7e0d022ee5e6d71a701521a01023a02993b307f910643e55f1"
+  digest = "1:dc60a6129fc9b0759700f861a7ebc6d469cf9f411d3e20619bf08fa132a243c3"
   name = "github.com/nalej/grpc-inventory-manager-go"
   packages = ["."]
   pruneopts = ""
-  revision = "a67e06b289962043840e1ccf4b07d0f902231e18"
-  version = "v0.0.2"
+  revision = "0a92b87ac9b8e90da2f9ab5c9652124d721cebbf"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
@@ -274,11 +287,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b72df5366dd701537b3a2593c948330bce9cf6576fccdff9df28c0873876715d"
+  digest = "1:033d3fdc1e3ca60a53c5cf308598b85244c91289c28f8b32eb6486601d82b3b5"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "18eb32c0e2f0c2bc8d17842ed4ad41486f349ad4"
+  revision = "9f0b1ff7b46a4014ddb5d4bdb6602a43b882cb27"
 
 [[projects]]
   digest = "1:bac96bbcaaf8f81c72a1dd59aceaf7cb0b16b64ff0c45c32af78dc9218651e07"
@@ -366,6 +379,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/coreos/go-systemd/daemon",
+    "github.com/coreos/go-systemd/dbus",
+    "github.com/coreos/go-systemd/unit",
     "github.com/coreos/go-systemd/util",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-edge-controller-go",
