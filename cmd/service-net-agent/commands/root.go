@@ -47,6 +47,15 @@ func init() {
 	rootCmd.PersistentFlags().String("address", "", "Edge Controller address")
 	rootConfig.BindPFlag("controller.address", rootCmd.PersistentFlags().Lookup("address"))
 
+	rootCmd.PersistentFlags().Bool("tls", true, "Use TLS to connect to Edge Controller")
+	rootConfig.BindPFlag("controller.tls", rootCmd.PersistentFlags().Lookup("tls"))
+
+	rootCmd.PersistentFlags().Bool("insecure", false, "Don't check Edge Controller certificate")
+	rootConfig.BindPFlag("controller.insecure", rootCmd.PersistentFlags().Lookup("insecure"))
+
+	rootCmd.PersistentFlags().String("cert", "", "File with certificate to use to connect to Edge Controller")
+	rootConfig.BindPFlag("controller.cert", rootCmd.PersistentFlags().Lookup("cert"))
+
 	rootCmd.PersistentFlags().BoolVar(&debugLevel, "debug", false, "Set debug level")
 	rootCmd.PersistentFlags().BoolVar(&consoleLogging, "consoleLogging", false, "Pretty print logging")
 }

@@ -29,6 +29,8 @@ func init() {
 	joinCmd.Flags().StringVar(&joiner.Token, "token", "", "Join token")
 	joinCmd.MarkFlagRequired("token")
 
+	joinCmd.Flags().StringToStringVar(&joiner.Labels, "label", nil, "Asset labels")
+
 	rootCmd.AddCommand(joinCmd)
 }
 

@@ -147,12 +147,12 @@
   version = "v0.0.33"
 
 [[projects]]
-  digest = "1:e6a4843721cb3fafc4784c54bc3135bcbf9ed362eb8cf0b08258fcb548c83516"
+  digest = "1:04dd619dbf5b505ab15f55fd924eb45d496d0730be4570571b94100c3eee44ba"
   name = "github.com/nalej/grpc-edge-controller-go"
   packages = ["."]
   pruneopts = ""
-  revision = "136f122d1cd7f4e568eafedc6a570afd9edfd0d2"
-  version = "v0.0.2"
+  revision = "868b56d85fecb34dcc1a1697c00a75391f92476a"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:0244418fc7f34bd059fcbb2d152485380beb62568240cefd3ff738b5b5693d0c"
@@ -391,6 +391,9 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
+    "google.golang.org/grpc/metadata",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
