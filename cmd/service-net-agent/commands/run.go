@@ -6,6 +6,8 @@ package commands
 
 import (
 	"github.com/nalej/service-net-agent/internal/app/run"
+	"github.com/nalej/service-net-agent/internal/pkg/defaults"
+	"github.com/nalej/service-net-agent/pkg/svcmgr"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -15,10 +17,12 @@ var service = &run.Service{
 	Config: rootConfig,
 }
 
+var runAsService bool
+
 var runCmd = &cobra.Command{
 	Use: "run",
-	Short: "Start Service Net Agent",
-	Long: "Start Service Net Agent",
+	Short: "Run Service Net Agent",
+	Long: "Run Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		Setup(cmd)
 		onRun()
@@ -26,6 +30,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
+	runCmd.Flags().BoolVar(&runAsService, "service", false, "Run as system service where supported")
+
 	runCmd.Flags().Int("interval", 30, "Heartbeat interval")
 	rootConfig.BindPFlag("agent.interval", runCmd.Flags().Lookup("interval"))
 
@@ -40,7 +46,12 @@ func onRun() {
 		Fail(err, "invalid configuration")
 	}
 
-	err = service.Run()
+	manager, err := svcmgr.NewManager(defaults.AgentName, service)
+	if err != nil {
+		Fail(err, "unable to create service manager")
+	}
+
+	err = manager.Run(runAsService)
 	if err != nil {
 		Fail(err, "run failed")
 	}
