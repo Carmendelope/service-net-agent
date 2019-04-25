@@ -60,11 +60,11 @@ func (s *Service) Run() (derrors.Error) {
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
 	// Send start message
-	log.Debug().Msg("sending start message to edge controller")
 	request := &grpc_inventory_manager_go.AgentStartInfo{
 		AssetId: assetId,
-		// TBD - determine IP
+		Ip: client.LocalAddress(),
 	}
+	log.Debug().Str("asset_id", request.AssetId).Str("local_ip", request.Ip).Msg("sending start message to edge controller")
 	_, err := client.AgentStart(ctx, request)
 	if err != nil {
 		return derrors.NewUnavailableError("unable to send start message to edge controller", err)
