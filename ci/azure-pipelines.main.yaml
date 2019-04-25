@@ -1,6 +1,6 @@
 variables: 
   - name: appList
-    value: 'example-app other-app'  # Space separated list of apps to build
+    value: 'service-net-agent'  # Space separated list of apps to build
   - group: common-vars
   - group: slack-webhooks
   - group: ssh-credentials
