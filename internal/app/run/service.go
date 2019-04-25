@@ -21,6 +21,9 @@ type Service struct {
 }
 
 func (s *Service) Validate() (derrors.Error) {
+	if s.Config.GetString("agent.token") == "" {
+		return derrors.NewFailedPreconditionError("no token found - agent not joined to edge controller")
+	}
 	if s.Config.GetString("controller.address") == "" {
 		return derrors.NewInvalidArgumentError("address must be specified")
 	}

@@ -15,5 +15,17 @@
   version = "v2.0.0"
 
 [[constraint]]
+  name = "github.com/nalej/grpc-edge-controller-go"
+  version = "=v0.0.2"
+
+[[constraint]]
+  name = "github.com/nalej/grpc-inventory-go"
+  version = "v0.0.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/nalej/sysinfo"
+
+[[constraint]]
   name = "github.com/coreos/go-systemd"
   version = "v19"
