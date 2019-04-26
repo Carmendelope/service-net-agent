@@ -16,6 +16,7 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+	"github.com/nalej/service-net-agent/internal/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )
@@ -92,9 +93,15 @@ func (s *Service) Run() (derrors.Error) {
 			}
 
 			operations := result.GetPendingRequests()
-			if len(operations) > 0 {
-				// TBD - Handle operation requests async (spawn goroutine)
-				log.Debug().Interface("operations", operations).Msg("received operation requests")
+			for _, operation := range(operations) {
+				derr := s.ScheduleOperation(operation)
+				if derr != nil {
+					// Little risky to bail out of main loop when this fails,
+					// but the scheduling of an operation really shouldn't
+					// fail unless something is actually broken. We have a
+					// watchdog that will restart the agent in such case.
+					return derr
+				}
 			}
 
 			// Record last succesfull run
@@ -105,6 +112,24 @@ func (s *Service) Run() (derrors.Error) {
 	}
 
 	log.Debug().Msg("stopped")
+	return nil
+}
+
+func (s *Service) ScheduleOperation(request *grpc_inventory_manager_go.AgentOpRequest) derrors.Error {
+	var pluginName = plugin.PluginName(request.GetPlugin())
+	var opName = plugin.CommandName(request.GetOperation())
+	var params = request.GetParams()
+
+	log.Debug().Str("plugin", pluginName.String()).Str("operation", opName.String()).Interface("params", params).Msg("received operation request")
+
+	// TBD
+	// Job queue with max capacity
+	// Answer scheduled of queued, failed with specific error if capacity reached
+	// only a single worker - we need to execute in order and we don't want to overload agent
+	// timeout on operations
+
+	// Add to request list
+	// have executor thread
 	return nil
 }
 
