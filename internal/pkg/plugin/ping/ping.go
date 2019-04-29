@@ -9,6 +9,8 @@ package ping
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/nalej/derrors"
 
@@ -65,6 +67,10 @@ func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derr
 	msg, found := params["msg"]
 	if found {
 		msgString = fmt.Sprintf(" %s", msg)
+	}
+	sleep, _ := strconv.Atoi(params["sleep"])
+	if sleep > 0 {
+		time.Sleep(time.Duration(sleep) * time.Second)
 	}
 
 	return "pong" + msgString, nil

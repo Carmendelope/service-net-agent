@@ -27,7 +27,7 @@ type Dispatcher struct {
 	opQueue chan *grpc_inventory_manager_go.AgentOpRequest
 	resQueue chan *grpc_inventory_manager_go.AgentOpResponse
 
-	wg sync.WaitGroup
+	opWg, resWg sync.WaitGroup
 	cancel context.CancelFunc
 }
 
@@ -43,23 +43,15 @@ func NewDispatcher(client *client.AgentClient, queueLen int) (*Dispatcher, derro
 	}
 
 	// Start response routine
-	d.wg.Add(1)
+	d.resWg.Add(1)
 	// We stop the sending of responses by closing the channel, this allows
 	// us to still send all responses that are queued so the edge
 	// controller is aware of their status.
 	go d.resWorker(context.Background())
 
 	// Start worker routine
-	d.wg.Add(1)
+	d.opWg.Add(1)
 	go d.opWorker(ctx)
-
-	// go work(...)?
-	// - new worker
-	// - read queue
-	// - translate
-	// - send to worker
-	// TBD
-
 
 	return d, nil
 }
@@ -67,14 +59,19 @@ func NewDispatcher(client *client.AgentClient, queueLen int) (*Dispatcher, derro
 func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	log.Debug().Msg("stopping operation dispatcher")
 
+	// Set timeout for complete shutdown routine
+	timeoutChan := time.After(timeout)
+
 	// We cancel the operation worker routine - this potentially
 	// finishes the in-progress operation if it doesn't use the
-	// context properly - which is ok, we'll have a timeout later.
+	// context properly - which is ok, we have a timeout.
 	d.cancel()
 
-	// We loop over in-progress operation requests and tell the edge
+	// We loop over queued operation requests and tell the edge
 	// controller they are cancelled.
 	// We close the operations channel so our loop ends.
+	// We do this while the last operation is in progress so we have
+	// more time to send these out (in parallel with operation).
 	close(d.opQueue)
 	for op := range (d.opQueue) {
 		status := grpc_inventory_manager_go.AgentOpStatus_FAIL
@@ -82,27 +79,45 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 		d.respond(op, status, info)
 	}
 
+	// Wait for operation routine
+	timedout := wait(&d.opWg, timeoutChan)
+	if timedout {
+		return derrors.NewDeadlineExceededError("waiting for operation workers timed out - in-flight operations taking too long").WithParams(timeout)
+	}
+
 	// We indicate that we won't send any more responses. Response
 	// worker will send queued ones and then quit.
+	// We couldn't close earlier and wait together with operation routine,
+	// because operation routine could have sent one last response.
 	close(d.resQueue)
 
+	// Wait for response worker with same timeout
+	timedout = wait(&d.resWg, timeoutChan)
+	if timedout {
+		return derrors.NewDeadlineExceededError("waiting for response workers timed out - communication taking too long").WithParams(timeout)
+	}
+
+	return nil
+}
+
+func wait(wg *sync.WaitGroup, timeoutChan <-chan time.Time) bool {
 	// We wait until all is finished - with a timeout
 	// Wait in a separate routine so we can timeout
 	ch := make(chan struct{})
 	go func() {
-		d.wg.Wait()
+		wg.Wait()
 		close(ch)
 	}()
 
 	// Check whether wait was succesfull or we timed out
 	select {
 	case <-ch:
-		return nil
-	case <-time.After(timeout):
-		return derrors.NewDeadlineExceededError("waiting for operation workers timed out").WithParams(timeout)
+		break
+	case <-timeoutChan:
+		return true
 	}
 
-	return nil
+	return false // No timeout
 }
 
 // Add operation to queue and notify Edge Controller
@@ -149,7 +164,7 @@ func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, statu
 }
 
 func (d *Dispatcher) resWorker(ctx context.Context) {
-	defer d.wg.Done()
+	defer d.resWg.Done()
 
 	log.Debug().Msg("starting operation response worker")
 	for ctx.Err() == nil && d.resQueue != nil {
@@ -174,7 +189,7 @@ func (d *Dispatcher) resWorker(ctx context.Context) {
 }
 
 func (d *Dispatcher) opWorker(ctx context.Context) {
-	defer d.wg.Done()
+	defer d.opWg.Done()
 
 	log.Debug().Msg("starting operation worker")
 
