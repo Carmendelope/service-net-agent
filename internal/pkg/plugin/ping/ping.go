@@ -7,6 +7,7 @@ package ping
 // Ping example plugin
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nalej/derrors"
@@ -59,7 +60,7 @@ func (p *Ping) GetCommand(cmd plugin.CommandName) plugin.CommandFunc {
 	return p.commandMap[cmd]
 }
 
-func (p *Ping) ping(params map[string]string) (string, derrors.Error) {
+func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derrors.Error) {
 	var msgString string
 	msg, found := params["msg"]
 	if found {

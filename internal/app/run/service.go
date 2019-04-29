@@ -16,7 +16,6 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )
@@ -76,6 +75,12 @@ func (s *Service) Run() (derrors.Error) {
 		AssetId: assetId,
 	}
 
+	// Create dispatcher for operations
+	dispatcher, derr := NewDispatcher(client, s.Config.GetInt("agent.opqueue_len"))
+	if derr != nil {
+		return derr
+	}
+
 	// Start main heartbeat ticker
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -94,7 +99,15 @@ func (s *Service) Run() (derrors.Error) {
 
 			operations := result.GetPendingRequests()
 			for _, operation := range(operations) {
-				derr := s.ScheduleOperation(operation)
+				// Check asset id
+				if operation.GetAssetId() != assetId {
+					log.Warn().Str("operation_id", ""/*operation.GetOperationId()*/).
+						Str("asset_id", operation.GetAssetId()).
+						Msg("received operation with non-matching asset id")
+					continue
+				}
+
+				derr := dispatcher.Dispatch(operation)
 				if derr != nil {
 					// Little risky to bail out of main loop when this fails,
 					// but the scheduling of an operation really shouldn't
@@ -111,26 +124,10 @@ func (s *Service) Run() (derrors.Error) {
 		}
 	}
 
+	derr = dispatcher.Stop(s.Config.GetDuration("agent.shutdown_timeout"))
+
 	log.Debug().Msg("stopped")
-	return nil
-}
-
-func (s *Service) ScheduleOperation(request *grpc_inventory_manager_go.AgentOpRequest) derrors.Error {
-	var pluginName = plugin.PluginName(request.GetPlugin())
-	var opName = plugin.CommandName(request.GetOperation())
-	var params = request.GetParams()
-
-	log.Debug().Str("plugin", pluginName.String()).Str("operation", opName.String()).Interface("params", params).Msg("received operation request")
-
-	// TBD
-	// Job queue with max capacity
-	// Answer scheduled of queued, failed with specific error if capacity reached
-	// only a single worker - we need to execute in order and we don't want to overload agent
-	// timeout on operations
-
-	// Add to request list
-	// have executor thread
-	return nil
+	return derr
 }
 
 func (s *Service) errChanRun(errChan chan<- derrors.Error) {

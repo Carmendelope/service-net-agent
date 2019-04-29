@@ -34,8 +34,13 @@ var runCmd = &cobra.Command{
 func init() {
 	runCmd.Flags().BoolVar(&runAsService, "service", false, "Run as system service where supported")
 
-	runCmd.Flags().Duration("interval", time.Second * time.Duration(30), "Heartbeat interval")
+	runCmd.Flags().Duration("interval", time.Second * time.Duration(defaults.AgentHeartbeatInterval), "Heartbeat interval")
 	rootConfig.BindPFlag("agent.interval", runCmd.Flags().Lookup("interval"))
+
+	// No command-line options, but can be specified in config file
+	rootConfig.SetDefault("agent.comm_timeout", time.Duration(defaults.AgentCommTimeout) * time.Second)
+	rootConfig.SetDefault("agent.shutdown_timeout", time.Duration(defaults.AgentShutdownTimeout) * time.Second)
+	rootConfig.SetDefault("agent.opqueue_len", defaults.AgentOpQueueLen)
 
 	rootCmd.AddCommand(runCmd)
 }

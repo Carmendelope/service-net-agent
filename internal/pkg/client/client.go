@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"time"
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-edge-controller-go"
@@ -28,6 +29,7 @@ type ConnectionOptions struct {
 	UseTLS bool
 	CACert string
 	Insecure bool
+	Timeout time.Duration
 	Token string
 }
 
@@ -35,7 +37,7 @@ type AgentClient struct {
 	grpc_edge_controller_go.AgentClient
 	*grpc.ClientConn
 	address string
-	token string
+	opts *ConnectionOptions
 }
 
 func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derrors.Error) {
@@ -90,12 +92,16 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 
 	client := grpc_edge_controller_go.NewAgentClient(conn)
 
-	return &AgentClient{client, conn, address, opts.Token}, nil
+	return &AgentClient{client, conn, address, opts}, nil
 }
 
 func (c *AgentClient) GetContext() (context.Context) {
-	meta := metadata.New(map[string]string{"Authorization": c.token})
-	return metadata.NewOutgoingContext(context.Background(), meta)
+	meta := metadata.New(map[string]string{"Authorization": c.opts.Token})
+	ctx := metadata.NewOutgoingContext(context.Background(), meta)
+	if c.opts.Timeout > 0 {
+		ctx, _ = context.WithTimeout(ctx, c.opts.Timeout)
+	}
+	return ctx
 }
 
 // Get local address used for connecting to server

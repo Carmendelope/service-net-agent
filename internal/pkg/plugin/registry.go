@@ -7,6 +7,8 @@ package plugin
 // Plugin registry
 
 import (
+	"context"
+
 	"github.com/nalej/derrors"
 
 	"github.com/rs/zerolog/log"
@@ -79,9 +81,24 @@ func StartPlugin(name PluginName, conf *viper.Viper) derrors.Error {
 	return defaultRegistry.StartPlugin(name, conf)
 }
 
-// TBD StopPlugin
+func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
+	plugin, found := r.running[name]
+	if !found {
+		return derrors.NewInvalidArgumentError("plugin not running").WithParams(name)
+	}
 
-func (r *Registry) ExecuteCommand(name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
+	delete(r.running, name)
+	plugin.StopPlugin()
+
+	return nil
+}
+
+func StopPlugin(name PluginName) derrors.Error {
+	return defaultRegistry.StopPlugin(name)
+}
+
+
+func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
 	plugin, found := r.running[name]
 	if !found {
 		_, found := r.available[name]
@@ -96,9 +113,9 @@ func (r *Registry) ExecuteCommand(name PluginName, cmd CommandName, params map[s
 		return "", derrors.NewInvalidArgumentError("command not available").WithParams(name, cmd)
 	}
 
-	return cmdFunc(params)
+	return cmdFunc(ctx, params)
 }
 
-func ExecuteCommand(name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
-	return defaultRegistry.ExecuteCommand(name, cmd, params)
+func ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
+	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
 }

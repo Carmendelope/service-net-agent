@@ -7,6 +7,8 @@ package plugin
 // Plugin infrastructure
 
 import (
+	"context"
+
 	"github.com/nalej/derrors"
 
 	"github.com/spf13/viper"
@@ -28,7 +30,7 @@ func (n CommandName) String() string {
 }
 
 // Type for functions that implement execution of plugin commands
-type CommandFunc func(params map[string]string) (string, derrors.Error)
+type CommandFunc func(ctx context.Context, params map[string]string) (string, derrors.Error)
 
 // Type for mapping plugin commands to their implementation
 type CommandMap map[CommandName]CommandFunc
