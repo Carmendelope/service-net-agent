@@ -11,7 +11,6 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-inventory-manager-go"
 	"github.com/nalej/grpc-inventory-go"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
@@ -58,17 +57,6 @@ func (s *Service) Run() (derrors.Error) {
 	ctx := client.GetContext()
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
-
-	// Send start message
-	request := &grpc_inventory_manager_go.AgentStartInfo{
-		AssetId: assetId,
-		Ip: client.LocalAddress(),
-	}
-	log.Debug().Str("asset_id", request.AssetId).Str("local_ip", request.Ip).Msg("sending start message to edge controller")
-	_, err := client.AgentStart(ctx, request)
-	if err != nil {
-		return derrors.NewUnavailableError("unable to send start message to edge controller", err)
-	}
 
 	// Create default heartbeat message
 	beatRequest := &grpc_inventory_go.AssetId{

@@ -50,7 +50,6 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		cpuInfo[count] = &grpc_inventory_go.CPUInfo{
 			Manufacturer: i.CPU.Vendor,
 			Model: i.CPU.Model,
-			Architecture: i.OS.Architecture,
 			NumCores: int32(i.CPU.Cores),
 		}
 	}
@@ -88,6 +87,8 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		Os: &grpc_inventory_go.OperatingSystemInfo{
 			Name: i.OS.Name,
 			Version: i.Kernel.Release,
+			Architecture: i.OS.Architecture,
+			Class: GetOSClass(),
 		},
 		Hardware: &grpc_inventory_go.HardwareInfo{
 			Cpus: cpuInfo,
