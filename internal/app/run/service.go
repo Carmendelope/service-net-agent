@@ -150,7 +150,7 @@ func heartbeat(client *client.AgentClient, dispatcher *Dispatcher, assetId strin
 			log.Warn().Str("operation_id", ""/*operation.GetOperationId()*/).
 				Str("asset_id", operation.GetAssetId()).
 				Msg("received operation with non-matching asset id")
-			return beatSent, nil
+			continue
 		}
 
 		derr := dispatcher.Dispatch(operation)
