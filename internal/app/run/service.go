@@ -57,11 +57,6 @@ func (s *Service) Run() (derrors.Error) {
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
-	// Create default heartbeat message
-	beatRequest := &grpc_inventory_go.AssetId{
-		AssetId: assetId,
-	}
-
 	// Create dispatcher for operations
 	dispatcher, derr := NewDispatcher(client, s.Config.GetInt("agent.opqueue_len"))
 	if derr != nil {
@@ -72,41 +67,28 @@ func (s *Service) Run() (derrors.Error) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
+	// Initial heartbeat so the edge controller knows we're running right away
+	_, derr = heartbeat(client, dispatcher, assetId)
+	if derr != nil {
+		return derr
+	}
+
 	stop := false
 	for !stop {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
-			log.Debug().Msg("sending heartbeat to edge controller")
-			ctx := client.GetContext()
-			result, err := client.AgentCheck(ctx, beatRequest)
-			if err != nil {
-				log.Warn().Err(err).Msg("failed sending heartbeat")
-				continue
-			}
-
-			operations := result.GetPendingRequests()
-			for _, operation := range(operations) {
-				// Check asset id
-				if operation.GetAssetId() != assetId {
-					log.Warn().Str("operation_id", ""/*operation.GetOperationId()*/).
-						Str("asset_id", operation.GetAssetId()).
-						Msg("received operation with non-matching asset id")
-					continue
-				}
-
-				derr := dispatcher.Dispatch(operation)
-				if derr != nil {
-					// Little risky to bail out of main loop when this fails,
-					// but the scheduling of an operation really shouldn't
-					// fail unless something is actually broken. We have a
-					// watchdog that will restart the agent in such case.
-					return derr
-				}
+			ok, derr := heartbeat(client, dispatcher, assetId)
+			if derr != nil {
+				// Something is wrong with the dispatcher,
+				// we're not going to try to stop it.
+				return derr
 			}
 
 			// Record last succesfull run
-			s.lastBeat = time.Now()
+			if ok {
+				s.lastBeat = time.Now()
+			}
 		case <-s.stopChan:
 			stop = true
 		}
@@ -141,4 +123,45 @@ func (s *Service) Alive() (bool, derrors.Error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func heartbeat(client *client.AgentClient, dispatcher *Dispatcher, assetId string) (bool, derrors.Error) {
+	log.Debug().Msg("sending heartbeat to edge controller")
+
+	var beatSent = false
+
+	// Create default heartbeat message
+	beatRequest := &grpc_inventory_go.AssetId{
+		AssetId: assetId,
+	}
+
+	ctx := client.GetContext()
+	result, err := client.AgentCheck(ctx, beatRequest)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed sending heartbeat")
+		return beatSent, nil
+	}
+	beatSent = true
+
+	operations := result.GetPendingRequests()
+	for _, operation := range(operations) {
+		// Check asset id
+		if operation.GetAssetId() != assetId {
+			log.Warn().Str("operation_id", ""/*operation.GetOperationId()*/).
+				Str("asset_id", operation.GetAssetId()).
+				Msg("received operation with non-matching asset id")
+			return beatSent, nil
+		}
+
+		derr := dispatcher.Dispatch(operation)
+		if derr != nil {
+			// Little risky to bail out of main loop when this fails,
+			// but the scheduling of an operation really shouldn't
+			// fail unless something is actually broken. We have a
+			// watchdog that will restart the agent in such case.
+			return beatSent, derr
+		}
+	}
+
+	return beatSent, nil
 }
