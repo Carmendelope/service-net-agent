@@ -38,8 +38,8 @@ func init() {
 	rootConfig.BindPFlag("agent.interval", runCmd.Flags().Lookup("interval"))
 
 	// No command-line options, but can be specified in config file
-	rootConfig.SetDefault("agent.comm_timeout", time.Duration(defaults.AgentCommTimeout) * time.Second)
-	rootConfig.SetDefault("agent.shutdown_timeout", time.Duration(defaults.AgentShutdownTimeout) * time.Second)
+	rootConfig.SetDefault("agent.comm_timeout", (time.Second * time.Duration(defaults.AgentCommTimeout)).String())
+	rootConfig.SetDefault("agent.shutdown_timeout", (time.Second * time.Duration(defaults.AgentShutdownTimeout)).String())
 	rootConfig.SetDefault("agent.opqueue_len", defaults.AgentOpQueueLen)
 
 	rootCmd.AddCommand(runCmd)

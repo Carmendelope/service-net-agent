@@ -54,7 +54,6 @@ func (s *Service) Run() (derrors.Error) {
 	if derr != nil {
 		return derr
 	}
-	ctx := client.GetContext()
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
@@ -79,6 +78,7 @@ func (s *Service) Run() (derrors.Error) {
 		case <-ticker.C:
 			// Send heartbeat
 			log.Debug().Msg("sending heartbeat to edge controller")
+			ctx := client.GetContext()
 			result, err := client.AgentCheck(ctx, beatRequest)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed sending heartbeat")
