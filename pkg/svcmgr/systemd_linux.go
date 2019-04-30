@@ -24,6 +24,8 @@ import (
 )
 
 const (
+	defaultWatchdogSec = "120"
+
 	// Relative unit path
 	systemDUnitPath = "systemd/system"
 	systemDUnitExt = "service"
@@ -39,6 +41,7 @@ const (
 	nameRestart = "Restart"
 	nameExecStart = "ExecStart"
 	nameWantedBy = "WantedBy"
+	nameWatchdogSec = "WatchdogSec"
 
 	valueNetwork = "network.target"
 	valueNotify = "notify"
@@ -50,7 +53,7 @@ const (
 // Determine the absolute path for the unit file
 func getUnitFilename(name, basePath string) (string, derrors.Error) {
 	filename := fmt.Sprintf("%s.%s", name, systemDUnitExt)
-        path := filepath.Join(basePath, systemDUnitPath, filename)
+	path := filepath.Join(basePath, systemDUnitPath, filename)
 	return path, nil
 }
 
@@ -64,6 +67,7 @@ func createUnitFile(desc, bin string, args []string) (io.Reader, derrors.Error) 
 		unit.NewUnitOption(sectionService, nameType, valueNotify),
 		unit.NewUnitOption(sectionService, nameNotifyAccess, valueMain),
 		unit.NewUnitOption(sectionService, nameRestart, valueOnFailure),
+		unit.NewUnitOption(sectionService, nameWatchdogSec, defaultWatchdogSec),
 		unit.NewUnitOption(sectionService, nameExecStart, execCommand),
 
 		unit.NewUnitOption(sectionInstall, nameWantedBy, valueMultiUser),

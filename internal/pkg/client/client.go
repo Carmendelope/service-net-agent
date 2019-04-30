@@ -12,7 +12,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"strings"
+	"net"
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-edge-controller-go"
@@ -34,6 +34,7 @@ type ConnectionOptions struct {
 type AgentClient struct {
 	grpc_edge_controller_go.AgentClient
 	*grpc.ClientConn
+	address string
 	token string
 }
 
@@ -63,9 +64,14 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 			log.Warn().Msg("creating insecure connection")
 		}
 
+		host, _, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, derrors.NewInternalError("unable to determine host and port from address", err).WithParams(address)
+		}
+
 		tlsConfig := &tls.Config{
 			RootCAs: pool,
-			ServerName: strings.Split(address, ":")[0],
+			ServerName: host,
 			InsecureSkipVerify: opts.Insecure,
 		}
 
@@ -84,12 +90,31 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 
 	client := grpc_edge_controller_go.NewAgentClient(conn)
 
-	return &AgentClient{client, conn, opts.Token}, nil
+	return &AgentClient{client, conn, address, opts.Token}, nil
 }
 
 func (c *AgentClient) GetContext() (context.Context) {
 	meta := metadata.New(map[string]string{"Authorization": c.token})
 	return metadata.NewOutgoingContext(context.Background(), meta)
+}
+
+// Get local address used for connecting to server
+func (c *AgentClient) LocalAddress() string {
+	// We cannot directly determine the local peer address from a gRPC
+	// connection and we don't have access to the raw net.Conn. Hence,
+	// we set up a dummy connection (we don't actually send any packets
+	// when using a UDP connection) to figure/ out the local IP we would
+	// be using.
+	// See also the Golang source: srcAddrs() in net/addrselect.go.
+	conn, err := net.Dial("udp", c.address)
+	if err != nil {
+		log.Warn().Err(err).Str("address", c.address).Msg("no route to server")
+		return ""
+	}
+	defer conn.Close()
+
+	addr := conn.LocalAddr().(*net.UDPAddr)
+	return addr.IP.String()
 }
 
 // Add X509 certificate from a file to a pool
