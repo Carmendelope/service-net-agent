@@ -21,7 +21,7 @@ type Implementation struct {
 	runner Runner
 }
 
-func NewImplementation(runner Runner) (*Implementation, derrors.Error) {
+func NewImplementation(name string, runner Runner) (*Implementation, derrors.Error) {
 	i := &Implementation{
 		runner: runner,
 	}

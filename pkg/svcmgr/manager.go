@@ -30,7 +30,7 @@ type Manager struct {
 }
 
 func NewManager(name string, runner Runner) (*Manager, derrors.Error) {
-	impl, derr := NewImplementation(runner)
+	impl, derr := NewImplementation(name, runner)
 	if derr != nil {
 		return nil, derr
 	}

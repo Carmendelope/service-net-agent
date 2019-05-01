@@ -17,7 +17,7 @@ import (
 type Implementation struct {
 }
 
-func NewImplementation(Runner) (*Implementation, derrors.Error) {
+func NewImplementation(string, Runner) (*Implementation, derrors.Error) {
 	i := &Implementation{
 	}
 

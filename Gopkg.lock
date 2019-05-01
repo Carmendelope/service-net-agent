@@ -294,6 +294,7 @@
     "windows",
     "windows/registry",
     "windows/svc",
+    "windows/svc/debug",
     "windows/svc/eventlog",
     "windows/svc/mgr",
   ]
@@ -399,6 +400,9 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "golang.org/x/sys/windows",
+    "golang.org/x/sys/windows/svc",
+    "golang.org/x/sys/windows/svc/debug",
     "golang.org/x/sys/windows/svc/eventlog",
     "golang.org/x/sys/windows/svc/mgr",
     "google.golang.org/grpc",

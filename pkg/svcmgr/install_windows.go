@@ -52,7 +52,7 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	s, err := m.OpenService(i.name)
 	if err == nil {
 		s.Close()
-		return derrors.NewInvalidArgumentError("service already installed").WithParams(i.name)
+		return derrors.NewInvalidArgumentError("service already installed, removing").WithParams(i.name)
 	}
 
 	// Create the service and associated event log entries
@@ -114,26 +114,29 @@ func (i *Installer) Enable() (derrors.Error) {
 	return nil
 }
 
-/*
-func removeService(name string) error {
+func (i *Installer) Remove() (derrors.Error) {
 	m, err := mgr.Connect()
 	if err != nil {
-		return err
+		return derrors.NewInternalError("unable to connect to system service manager", err)
 	}
 	defer m.Disconnect()
-	s, err := m.OpenService(name)
+
+	// Get service
+	s, err := m.OpenService(i.name)
 	if err != nil {
-		return fmt.Errorf("service %s is not installed", name)
+		return derrors.NewInvalidArgumentError("service not installed", err).WithParams(i.name)
 	}
 	defer s.Close()
+
 	err = s.Delete()
 	if err != nil {
-		return err
+		return derrors.NewInternalError("unable to delete service", err).WithParams(i.name)
 	}
-	err = eventlog.Remove(name)
+
+	err = eventlog.Remove(i.name)
 	if err != nil {
-		return fmt.Errorf("RemoveEventLogSource() failed: %s", err)
+		return derrors.NewInternalError("unable to remove event log entries", err).WithParams(i.name)
 	}
+
 	return nil
 }
-*/
