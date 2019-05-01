@@ -9,7 +9,6 @@ package svcmgr
 import (
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -42,16 +41,12 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	log.Debug().Str("name", i.name).Str("bin", bin).Msg("installing service")
 
 	// Check if exists and executable
-	binPath, err := exec.LookPath(bin)
-	if err != nil {
-		return derrors.NewUnavailableError("service executable not found", err).WithParams(bin)
-	}
-	absBinPath, err := filepath.Abs(binPath)
-	if err != nil {
-		return derrors.NewUnavailableError("service executable not found", err).WithParams(bin)
+	fullPath, derr := fullExecPath(bin)
+	if derr != nil {
+		return derr
 	}
 
-	reader, derr := createUnitFile(strings.Join(desc, " "), absBinPath, args)
+	reader, derr := createUnitFile(strings.Join(desc, " "), fullPath, args)
 	if derr != nil {
 		return derr
 	}
@@ -63,7 +58,7 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	}
 
 	unitPath := filepath.Dir(filename)
-	err = os.MkdirAll(unitPath, 0755)
+	err := os.MkdirAll(unitPath, 0755)
 	if err != nil {
 		return derrors.NewPermissionDeniedError("unable to create unit path", err).WithParams(unitPath)
 	}

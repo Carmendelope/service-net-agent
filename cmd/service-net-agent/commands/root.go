@@ -44,7 +44,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&rootConfig.ConfigFile, "config", filepath.Join(rootConfig.Path, defaults.ConfigFile), "Configuration file")
 	rootCmd.MarkPersistentFlagFilename("config")
 
-	rootCmd.PersistentFlags().String("address", "", "Edge Controller address")
+	rootCmd.PersistentFlags().String("address", "abc" + string('\\') + "123", "Edge Controller address")
 	rootConfig.BindPFlag("controller.address", rootCmd.PersistentFlags().Lookup("address"))
 
 	rootCmd.PersistentFlags().Bool("tls", true, "Use TLS to connect to Edge Controller")

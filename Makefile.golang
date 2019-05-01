@@ -104,6 +104,15 @@ linux:
 		fi ; \
 	done
 
+windows:
+	@echo ">>> Bulding for Windows..."
+	for app in $(APPS); do \
+		if [ -d cmd/"$$app" ]; then \
+			CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(TARGET)/windows_amd64/"$$app".exe ./cmd/"$$app" && \
+			echo Built $$app binary for Windows ; \
+		fi ; \
+	done
+
 yaml:
 	@echo ">>> Creating K8s files..."
 	rm -rf $(TARGET)/yaml/{appcluster,mngtcluster}

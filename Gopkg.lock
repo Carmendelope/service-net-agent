@@ -289,7 +289,14 @@
   branch = "master"
   digest = "1:033d3fdc1e3ca60a53c5cf308598b85244c91289c28f8b32eb6486601d82b3b5"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+    "windows/registry",
+    "windows/svc",
+    "windows/svc/eventlog",
+    "windows/svc/mgr",
+  ]
   pruneopts = ""
   revision = "9f0b1ff7b46a4014ddb5d4bdb6602a43b882cb27"
 
@@ -392,6 +399,8 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "golang.org/x/sys/windows/svc/eventlog",
+    "golang.org/x/sys/windows/svc/mgr",
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/metadata",
