@@ -106,3 +106,9 @@ func (i *Implementation) watchdog(stopChan <-chan bool) {
 		}
 	}
 }
+
+
+func Start(servicename string) derrors.Error {
+	// SystemD implementation
+	return start(servicename)
+}

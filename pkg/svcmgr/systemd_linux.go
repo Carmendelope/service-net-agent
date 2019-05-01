@@ -146,7 +146,7 @@ func checkSystem() derrors.Error {
 	return nil
 }
 
-func Start(servicename string) derrors.Error {
+func start(servicename string) derrors.Error {
 	conn, err := dbus.NewSystemdConnection()
 	if err != nil {
 		return derrors.NewInternalError("unable to connect to system service manager", err)
