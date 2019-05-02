@@ -27,7 +27,7 @@
   version = "v0.0.4"
 
 [[constraint]]
-  branch = "master"
+  branch = "feature/NP-1238_Cleanup"
   name = "github.com/nalej/sysinfo"
 
 [[constraint]]

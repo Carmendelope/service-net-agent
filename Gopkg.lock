@@ -187,15 +187,18 @@
   version = "v0.0.29"
 
 [[projects]]
-  branch = "master"
-  digest = "1:eef92cca1f85f40354f1368f983812f302095325c04d3706e8ed458af3a45b8f"
+  branch = "feature/NP-1238_Cleanup"
+  digest = "1:b587b28ad2415d80b5cd5614d900c7388bf5f8b4398b6b797e21d2eba7bf931e"
   name = "github.com/nalej/sysinfo"
   packages = [
     ".",
-    "cpuid",
+    "internal/pkg/cpuid",
+    "internal/pkg/sysinfo",
+    "internal/pkg/wmi",
+    "version",
   ]
   pruneopts = ""
-  revision = "48e08a85bdd4d6fec1688af1007f956800bb7fc4"
+  revision = "5f2300cb2d9b368323598d7fb51cf5d502a5a054"
 
 [[projects]]
   digest = "1:1abf7411185ed8dde4e62c3d3fe9f2de5ffb3a86d1fbd405177afc8a40916adf"
@@ -206,7 +209,7 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:ab474d6efd05d6a21bf2544a78821e721c9cb02aeef09df37a983ab07bdad562"
+  digest = "1:3b6d6b1b349b7a4e3325572853b9e1f95b7f87950be55ae3317f8c91fb878d00"
   name = "github.com/rs/zerolog"
   packages = [
     ".",
@@ -215,8 +218,8 @@
     "log",
   ]
   pruneopts = ""
-  revision = "3e85c4b21c1adb254dd43a93d93263fbe7d9dc13"
-  version = "v1.14.0"
+  revision = "acf3980132bfcdc48638724e6e3d9e5749b85999"
+  version = "v1.14.3"
 
 [[projects]]
   digest = "1:956f655c87b7255c6b1ae6c203ebb0af98cf2a13ef2507e34c9bf1c0332ac0f5"
