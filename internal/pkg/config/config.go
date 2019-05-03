@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/nalej/derrors"
 
@@ -23,7 +24,16 @@ type Config struct {
 	Path string
 	ConfigFile string
 
+	// For plugins - calling write on a subtree will call write on parent
+	parent *Config
+	// Key under which this child sits at parent
+	childKey string
+
+	// Write lock
+	writeLock sync.Mutex
+
 	*viper.Viper
+
 }
 
 func NewConfig() (*Config) {
@@ -58,7 +68,43 @@ func (c *Config) Read() (derrors.Error) {
 	return nil
 }
 
+func (c *Config) GetPluginConfig() *Config {
+	sub := c.Sub("plugins")
+	if sub == nil {
+		sub = viper.New()
+	}
+
+	config := &Config{
+		parent: c,
+		childKey: "plugins",
+		Viper: sub,
+	}
+
+	return config
+}
+
+func (c *Config) MergeToParent() {
+	if c.parent == nil {
+		return
+	}
+	c.parent.writeLock.Lock()
+	defer c.parent.writeLock.Unlock()
+
+	c.parent.Set(c.childKey, c.AllSettings())
+}
+
 func (c *Config) Write() derrors.Error {
+	// Writing of sub-configs will write the parent
+	if c.parent != nil {
+		// Merge key and write
+		c.MergeToParent()
+		return c.parent.Write()
+	}
+
+	// Writing should be thread-safe
+	c.writeLock.Lock()
+	defer c.writeLock.Unlock()
+
 	confDir := filepath.Dir(c.ConfigFile)
 	err := os.MkdirAll(confDir, 0755)
 	if err != nil {

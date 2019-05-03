@@ -7,6 +7,7 @@ package run
 // Agent normal operation
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/nalej/derrors"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
+	"github.com/nalej/service-net-agent/internal/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )
@@ -46,6 +48,19 @@ func (s *Service) Validate() (derrors.Error) {
 func (s *Service) Run() (derrors.Error) {
 	s.Config.Print()
 
+	// Restart previously running plugins
+	plugins := s.Config.GetStringMap("plugins")
+	for k, _ := range(plugins) {
+		if !s.Config.GetBool(fmt.Sprintf("plugins.%s.enabled", k)) {
+			continue
+		}
+		conf := s.Config.Sub(fmt.Sprintf("plugins.%s", k))
+		derr := plugin.StartPlugin(plugin.PluginName(k), conf)
+		if derr != nil {
+			return derr
+		}
+	}
+
 	interval := s.Config.GetDuration("agent.interval")
 	assetId := s.Config.GetString("agent.asset_id")
 
@@ -57,8 +72,11 @@ func (s *Service) Run() (derrors.Error) {
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
-	// Create dispatcher for operations
-	dispatcher, derr := NewDispatcher(client, s.Config.GetInt("agent.opqueue_len"))
+	// Create worker to execute operations
+	worker := NewWorker(s.Config.GetPluginConfig())
+
+	// Create dispatcher for operations to workers
+	dispatcher, derr := NewDispatcher(client, worker, s.Config.GetInt("agent.opqueue_len"))
 	if derr != nil {
 		return derr
 	}

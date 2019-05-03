@@ -53,6 +53,7 @@ func Register(name PluginName, newFunc NewPluginFunc) derrors.Error {
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
+	log.Debug().Str("name", name.String()).Interface("config", conf.AllSettings()).Msg("starting plugin")
 	newFunc, found := r.available[name]
 	if !found {
 		return derrors.NewInvalidArgumentError("plugin not available").WithParams(name)
@@ -82,6 +83,7 @@ func StartPlugin(name PluginName, conf *viper.Viper) derrors.Error {
 }
 
 func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
+	log.Debug().Str("name", name.String()).Msg("stopping plugin")
 	plugin, found := r.running[name]
 	if !found {
 		return derrors.NewInvalidArgumentError("plugin not running").WithParams(name)

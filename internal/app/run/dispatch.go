@@ -23,6 +23,7 @@ import (
 
 type Dispatcher struct {
 	client *client.AgentClient
+	worker *Worker
 
 	opQueue chan *grpc_inventory_manager_go.AgentOpRequest
 	resQueue chan *grpc_inventory_manager_go.AgentOpResponse
@@ -31,12 +32,13 @@ type Dispatcher struct {
 	cancel context.CancelFunc
 }
 
-func NewDispatcher(client *client.AgentClient, queueLen int) (*Dispatcher, derrors.Error) {
+func NewDispatcher(client *client.AgentClient, worker *Worker, queueLen int) (*Dispatcher, derrors.Error) {
 	// We want to be able to cancel
 	ctx, cancel := context.WithCancel(context.Background())
 
 	d := &Dispatcher{
 		client: client,
+		worker: worker,
 		opQueue: make(chan *grpc_inventory_manager_go.AgentOpRequest, queueLen),
 		resQueue: make(chan *grpc_inventory_manager_go.AgentOpResponse, queueLen),
 		cancel: cancel,
@@ -193,9 +195,6 @@ func (d *Dispatcher) opWorker(ctx context.Context) {
 
 	log.Debug().Msg("starting operation worker")
 
-	// Create worker
-	worker := NewWorker()
-
 	for ctx.Err() == nil && d.opQueue != nil {
 		select {
 		case op, ok := <-d.opQueue:
@@ -218,7 +217,7 @@ func (d *Dispatcher) opWorker(ctx context.Context) {
 				Msg("executing operation request")
 
 			status := grpc_inventory_manager_go.AgentOpStatus_SUCCESS
-			result, derr := worker.Execute(ctx, pluginName, opName, params)
+			result, derr := d.worker.Execute(ctx, pluginName, opName, params)
 			if derr != nil {
 				log.Warn().Err(derr).Str("operation_id", opId).Msg("failed executing operation")
 				status = grpc_inventory_manager_go.AgentOpStatus_FAIL
