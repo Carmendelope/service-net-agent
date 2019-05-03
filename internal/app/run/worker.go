@@ -52,6 +52,10 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 		}
 	case plugin.StopCommand:
 		derr = plugin.StopPlugin(name)
+		if derr == nil {
+			// Remove from config file
+			w.writePluginConfig(name, nil)
+		}
 	default:
 		result, derr = plugin.ExecuteCommand(ctx, name, cmd, params)
 	}
@@ -63,11 +67,13 @@ func (w *Worker) writePluginConfig(name plugin.PluginName, config *viper.Viper) 
 	confName := name.String()
 
 	log.Debug().Str("name", confName).Msg("writing plugin configuration")
-	for k, v := range(config.AllSettings()) {
-		w.config.Set(fmt.Sprintf("%s.%s", confName, k), v)
+	if config == nil {
+		w.config.Unset(confName)
+	} else {
+		w.config.ReplaceSubtree(confName, config)
+		// We always set something to make to config file entry exist
+		w.config.Set(fmt.Sprintf("%s.enabled", confName), true)
 	}
-	// We always set something to make to config file entry exist
-	w.config.Set(fmt.Sprintf("%s.enabled", confName), true)
 
 	// This writes the plugin config, which also makes the plugin persistent on reboot
 	derr := w.config.Write()

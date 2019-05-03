@@ -7,6 +7,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -90,7 +91,32 @@ func (c *Config) MergeToParent() {
 	c.parent.writeLock.Lock()
 	defer c.parent.writeLock.Unlock()
 
-	c.parent.Set(c.childKey, c.AllSettings())
+	c.parent.ReplaceSubtree(c.childKey, c.Viper)
+}
+
+func (c *Config) ReplaceSubtree(prefix string, config *viper.Viper) {
+	c.Unset(prefix)
+	c.MergeSubtree(prefix, config)
+}
+
+func (c *Config) MergeSubtree(prefix string, config *viper.Viper) {
+	for k, v := range(config.AllSettings()) {
+		c.Set(fmt.Sprintf("%s.%s", prefix, k), v)
+	}
+}
+
+func (c *Config) Unset(key string) {
+	// Viper is not meant for deleting keys - we deep-copy everything,
+	// skipping keys that match
+	newConf := viper.New()
+	for _, k := range(c.AllKeys()) {
+		if k == key || strings.HasPrefix(k, key + ".") {
+			continue
+		}
+		newConf.Set(k, c.Get(k))
+	}
+
+	c.Viper = newConf
 }
 
 func (c *Config) Write() derrors.Error {
@@ -110,6 +136,9 @@ func (c *Config) Write() derrors.Error {
 	if err != nil {
 		return derrors.NewPermissionDeniedError("failed creating config dir", err).WithParams(confDir)
 	}
+
+	// We set this here in case we re-created a config when deleting keys
+	c.SetConfigFile(c.ConfigFile)
 
 	// Unstable version of viper allows to set filemode, we need
 	// to do it after writing. This does introduce a slight vulnerability
