@@ -129,10 +129,10 @@ func (d *Dispatcher) Dispatch(op *grpc_inventory_manager_go.AgentOpRequest) derr
 	var info string
 	select {
 	case d.opQueue <- op:
-		// log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation")
+		log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation")
 		status = grpc_inventory_manager_go.AgentOpStatus_SCHEDULED
 	default:
-		// log.Debug().Str("operation_id", op.GetOperationId()).Msg("operation queue full")
+		log.Debug().Str("operation_id", op.GetOperationId()).Msg("operation queue full")
 		status = grpc_inventory_manager_go.AgentOpStatus_FAIL
 		info = "agent operation queue full"
 	}
@@ -148,7 +148,7 @@ func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, statu
 		OrganizationId: op.GetOrganizationId(),
 		EdgeControllerId: op.GetEdgeControllerId(),
 		AssetId: op.GetAssetId(),
-		// OperationId: op.GetOperationId(),
+		OperationId: op.GetOperationId(),
 		Timestamp: time.Now().UTC().Unix(),
 		Status: status,
 		Info: info,
@@ -160,7 +160,7 @@ func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, statu
 	// ok to block main loop - agent might die but something is wrong anyway
 	// so an agent restart might help.
 	d.resQueue <- response
-	// log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation response")
+	log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation response")
 }
 
 func (d *Dispatcher) resWorker(ctx context.Context) {
@@ -175,7 +175,7 @@ func (d *Dispatcher) resWorker(ctx context.Context) {
 				d.resQueue = nil
 				break
 			}
-			// log.Debug().Str("operation_id", response.GetOperationId()).Msg("sending operation response")
+			log.Debug().Str("operation_id", response.GetOperationId()).Msg("sending operation response")
 			_, err := d.client.CallbackAgentOperation(d.client.GetContext(), response)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed sending operation response to edge controller")
@@ -208,7 +208,7 @@ func (d *Dispatcher) opWorker(ctx context.Context) {
 			var pluginName = plugin.PluginName(op.GetPlugin())
 			var opName = plugin.CommandName(op.GetOperation())
 			var params = op.GetParams()
-			var opId = "" // op.GetOperationId()
+			var opId = op.GetOperationId()
 
 			log.Debug().
 				Str("operation_id", opId).
