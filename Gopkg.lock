@@ -187,8 +187,7 @@
   version = "v0.0.29"
 
 [[projects]]
-  branch = "feature/NP-1238_Cleanup"
-  digest = "1:b587b28ad2415d80b5cd5614d900c7388bf5f8b4398b6b797e21d2eba7bf931e"
+  digest = "1:25ad82a939814246092eb6afd66398e9448dc67d49c940b1b052fbef52ef96ee"
   name = "github.com/nalej/sysinfo"
   packages = [
     ".",
@@ -198,7 +197,8 @@
     "version",
   ]
   pruneopts = ""
-  revision = "5f2300cb2d9b368323598d7fb51cf5d502a5a054"
+  revision = "5ddfb389bcaafe8d6cd688f2db66b8b5ff7ca6e7"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:1abf7411185ed8dde4e62c3d3fe9f2de5ffb3a86d1fbd405177afc8a40916adf"
