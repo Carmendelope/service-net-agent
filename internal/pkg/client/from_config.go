@@ -24,6 +24,7 @@ func FromConfig(config *config.Config, token ...string) (*AgentClient, derrors.E
 		UseTLS: config.GetBool("controller.tls"),
 		CACert: config.GetString("controller.cert"),
 		Insecure: config.GetBool("controller.insecure"),
+		Timeout: config.GetDuration("agent.comm_timeout"),
 		Token: t,
 	}
 

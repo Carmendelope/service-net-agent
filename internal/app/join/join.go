@@ -60,9 +60,18 @@ func (j *Joiner) Run() (derrors.Error) {
 		return derrors.NewUnavailableError("unable to send join request", err)
 	}
 
-	// Store agent token in config
-	j.Config.Set("agent.token", response.GetToken())
-	j.Config.Set("agent.asset_id", response.GetAssetId())
+	// Check and store join response (token and asset id)
+	token := response.GetToken()
+	assetId := response.GetAssetId()
+	if token == "" {
+		return derrors.NewInvalidArgumentError("no agent token received")
+	}
+	if assetId == "" {
+		return derrors.NewInvalidArgumentError("no asset id received")
+	}
+
+	j.Config.Set("agent.token", token)
+	j.Config.Set("agent.asset_id", assetId)
 
 	// Write config
 	derr = j.Config.Write()
