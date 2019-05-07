@@ -16,6 +16,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Worker instance handles the actual execution of a plugin operation and the
+// interaction with the plugin infrastructure.
+// Currently, we have a single worker; if we introduce parallel operation
+// execution in the agent, we will have likely a worker per running plugin.
+// This structure is empty now - we will add fields when we implement the
+// capability of persisting plugin configuration.
 type Worker struct {
 }
 

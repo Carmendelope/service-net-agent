@@ -147,7 +147,7 @@ func heartbeat(client *client.AgentClient, dispatcher *Dispatcher, assetId strin
 	for _, operation := range(operations) {
 		// Check asset id
 		if operation.GetAssetId() != assetId {
-			log.Warn().Str("operation_id", ""/*operation.GetOperationId()*/).
+			log.Warn().Str("operation_id", operation.GetOperationId()).
 				Str("asset_id", operation.GetAssetId()).
 				Msg("received operation with non-matching asset id")
 			continue

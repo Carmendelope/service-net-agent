@@ -22,35 +22,43 @@ import (
 )
 
 type Dispatcher struct {
+	// Client connection to Edge Controller
 	client *client.AgentClient
 
+	// Queue of operations received from Edge Controller to be processed
 	opQueue chan *grpc_inventory_manager_go.AgentOpRequest
+	// Queue of responses to be sent to Edge Controller
 	resQueue chan *grpc_inventory_manager_go.AgentOpResponse
 
-	opWg, resWg sync.WaitGroup
-	cancel context.CancelFunc
+	// Wait for working handling operations queue to finish
+	opWorkerWaitgroup sync.WaitGroup
+	// Wait for working handling response queue to finish
+	resWorkerWaitgroup sync.WaitGroup
+
+	// Cancel function to interrupt operations worker
+	cancelOpWorker context.CancelFunc
 }
 
 func NewDispatcher(client *client.AgentClient, queueLen int) (*Dispatcher, derrors.Error) {
 	// We want to be able to cancel
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancelOpWorker := context.WithCancel(context.Background())
 
 	d := &Dispatcher{
 		client: client,
 		opQueue: make(chan *grpc_inventory_manager_go.AgentOpRequest, queueLen),
 		resQueue: make(chan *grpc_inventory_manager_go.AgentOpResponse, queueLen),
-		cancel: cancel,
+		cancelOpWorker: cancelOpWorker,
 	}
 
 	// Start response routine
-	d.resWg.Add(1)
+	d.resWorkerWaitgroup.Add(1)
 	// We stop the sending of responses by closing the channel, this allows
 	// us to still send all responses that are queued so the edge
 	// controller is aware of their status.
 	go d.resWorker(context.Background())
 
 	// Start worker routine
-	d.opWg.Add(1)
+	d.opWorkerWaitgroup.Add(1)
 	go d.opWorker(ctx)
 
 	return d, nil
@@ -65,7 +73,7 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	// We cancel the operation worker routine - this potentially
 	// finishes the in-progress operation if it doesn't use the
 	// context properly - which is ok, we have a timeout.
-	d.cancel()
+	d.cancelOpWorker()
 
 	// We loop over queued operation requests and tell the edge
 	// controller they are cancelled.
@@ -80,7 +88,7 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	}
 
 	// Wait for operation routine
-	timedout := wait(&d.opWg, timeoutChan)
+	timedout := wait(&d.opWorkerWaitgroup, timeoutChan)
 	if timedout {
 		return derrors.NewDeadlineExceededError("waiting for operation workers timed out - in-flight operations taking too long").WithParams(timeout)
 	}
@@ -92,7 +100,7 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	close(d.resQueue)
 
 	// Wait for response worker with same timeout
-	timedout = wait(&d.resWg, timeoutChan)
+	timedout = wait(&d.resWorkerWaitgroup, timeoutChan)
 	if timedout {
 		return derrors.NewDeadlineExceededError("waiting for response workers timed out - communication taking too long").WithParams(timeout)
 	}
@@ -129,10 +137,10 @@ func (d *Dispatcher) Dispatch(op *grpc_inventory_manager_go.AgentOpRequest) derr
 	var info string
 	select {
 	case d.opQueue <- op:
-		// log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation")
+		log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation")
 		status = grpc_inventory_manager_go.AgentOpStatus_SCHEDULED
 	default:
-		// log.Debug().Str("operation_id", op.GetOperationId()).Msg("operation queue full")
+		log.Debug().Str("operation_id", op.GetOperationId()).Msg("operation queue full")
 		status = grpc_inventory_manager_go.AgentOpStatus_FAIL
 		info = "agent operation queue full"
 	}
@@ -148,7 +156,7 @@ func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, statu
 		OrganizationId: op.GetOrganizationId(),
 		EdgeControllerId: op.GetEdgeControllerId(),
 		AssetId: op.GetAssetId(),
-		// OperationId: op.GetOperationId(),
+		OperationId: op.GetOperationId(),
 		Timestamp: time.Now().UTC().Unix(),
 		Status: status,
 		Info: info,
@@ -160,11 +168,11 @@ func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, statu
 	// ok to block main loop - agent might die but something is wrong anyway
 	// so an agent restart might help.
 	d.resQueue <- response
-	// log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation response")
+	log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation response")
 }
 
 func (d *Dispatcher) resWorker(ctx context.Context) {
-	defer d.resWg.Done()
+	defer d.resWorkerWaitgroup.Done()
 
 	log.Debug().Msg("starting operation response worker")
 	for ctx.Err() == nil && d.resQueue != nil {
@@ -175,7 +183,7 @@ func (d *Dispatcher) resWorker(ctx context.Context) {
 				d.resQueue = nil
 				break
 			}
-			// log.Debug().Str("operation_id", response.GetOperationId()).Msg("sending operation response")
+			log.Debug().Str("operation_id", response.GetOperationId()).Msg("sending operation response")
 			_, err := d.client.CallbackAgentOperation(d.client.GetContext(), response)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed sending operation response to edge controller")
@@ -189,7 +197,7 @@ func (d *Dispatcher) resWorker(ctx context.Context) {
 }
 
 func (d *Dispatcher) opWorker(ctx context.Context) {
-	defer d.opWg.Done()
+	defer d.opWorkerWaitgroup.Done()
 
 	log.Debug().Msg("starting operation worker")
 
@@ -208,7 +216,7 @@ func (d *Dispatcher) opWorker(ctx context.Context) {
 			var pluginName = plugin.PluginName(op.GetPlugin())
 			var opName = plugin.CommandName(op.GetOperation())
 			var params = op.GetParams()
-			var opId = "" // op.GetOperationId()
+			var opId = op.GetOperationId()
 
 			log.Debug().
 				Str("operation_id", opId).
