@@ -69,15 +69,15 @@ func (c *Config) Read() (derrors.Error) {
 	return nil
 }
 
-func (c *Config) GetPluginConfig() *Config {
-	sub := c.Sub("plugins")
+func (c *Config) GetSubConfig(prefix string) *Config {
+	sub := c.Sub(prefix)
 	if sub == nil {
 		sub = viper.New()
 	}
 
 	config := &Config{
 		parent: c,
-		childKey: "plugins",
+		childKey: prefix,
 		Viper: sub,
 	}
 
