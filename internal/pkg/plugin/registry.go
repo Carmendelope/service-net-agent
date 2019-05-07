@@ -16,7 +16,7 @@ import (
 )
 
 // Type for mapping plugin names to functions that create them
-type AvailablePluginMap map[PluginName]NewPluginFunc
+type AvailablePluginMap map[PluginName]*PluginDescriptor
 
 // Type for mapping plugin names to running plugins
 type RunningPluginMap map[PluginName]Plugin
@@ -37,24 +37,24 @@ func NewRegistry() *Registry {
 	return r
 }
 
-func (r *Registry) Register(name PluginName, newFunc NewPluginFunc) derrors.Error {
-	_, found := r.available[name]
+func (r *Registry) Register(plugin *PluginDescriptor) derrors.Error {
+	_, found := r.available[plugin.Name]
 	if found {
-		return derrors.NewInvalidArgumentError("plugin already registered").WithParams(name)
+		return derrors.NewInvalidArgumentError("plugin already registered").WithParams(plugin.Name)
 	}
 
-	r.available[name] = newFunc
-	log.Debug().Str("name", name.String()).Msg("plugin registered")
+	r.available[plugin.Name] = plugin
+	log.Debug().Str("name", plugin.Name.String()).Msg("plugin registered")
 	return nil
 }
 
-func Register(name PluginName, newFunc NewPluginFunc) derrors.Error {
-	return defaultRegistry.Register(name, newFunc)
+func Register(plugin *PluginDescriptor) derrors.Error {
+	return defaultRegistry.Register(plugin)
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
 	log.Debug().Str("name", name.String()).Interface("config", conf.AllSettings()).Msg("starting plugin")
-	newFunc, found := r.available[name]
+	plugin, found := r.available[name]
 	if !found {
 		return derrors.NewInvalidArgumentError("plugin not available").WithParams(name)
 	}
@@ -64,7 +64,7 @@ func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Erro
 		return derrors.NewInvalidArgumentError("plugin already running").WithParams(name)
 	}
 
-	instance, derr := newFunc(conf)
+	instance, derr := plugin.NewFunc(conf)
 	if derr != nil {
 		return derr
 	}
@@ -110,7 +110,7 @@ func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd Comm
 		return "", derrors.NewInvalidArgumentError("plugin not running").WithParams(name)
 	}
 
-	cmdFunc := plugin.GetCommand(cmd)
+	cmdFunc := plugin.GetCommandFunc(cmd)
 	if cmdFunc == nil {
 		return "", derrors.NewInvalidArgumentError("command not available").WithParams(name, cmd)
 	}

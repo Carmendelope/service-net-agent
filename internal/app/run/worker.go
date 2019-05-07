@@ -19,7 +19,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-// We have one worker. Currently, we also have one thread dispatching work,
+// Worker instance handles the actual execution of a plugin operation and the
+// interaction with the plugin infrastructure.
+//
+// Currently, we have a single worker; if we introduce parallel operation
+// execution in the agent, we will have likely a worker per running plugin.
+// We also have one thread dispatching work,
 // so all operations are serialized. If we introduce multiple dispatcher
 // threads, we need to ensure that operations are still in the right order;
 // at least per plugin. We can either maintain a single worker with proper
@@ -27,6 +32,7 @@ import (
 // make sure the worker always executes in a serial manner. We also have to
 // take care that a single plugin (with serialized actions) shouldn't block
 // all (or actually, more than one) dispatcher thread.
+
 type Worker struct {
 	config *config.Config
 }

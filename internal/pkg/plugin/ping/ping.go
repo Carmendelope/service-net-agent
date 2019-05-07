@@ -23,18 +23,38 @@ import (
 // - example of configuration
 // - example of actual functionality in start/stop
 
+var pingDescriptor = plugin.PluginDescriptor{
+	Name: plugin.PluginName("ping"),
+	Description: "example ping plugin",
+	NewFunc: NewPing,
+}
+
 type Ping struct {
 	config *viper.Viper
 
-	commandMap plugin.CommandMap
+	commandMap plugin.CommandFuncMap
 }
 
-const (
-	pingName plugin.PluginName = "ping"
-)
-
 func init() {
-	plugin.Register(pingName, NewPing)
+	pingCommand := plugin.CommandDescriptor{
+		Name: plugin.CommandName("ping"),
+		Description: "echo command",
+	}
+	pingCommand.AddParam(plugin.ParamDescriptor{
+		Name: plugin.ParamName("msg"),
+		Description: "message to be echoed",
+		Required: false,
+	})
+	pingCommand.AddParam(plugin.ParamDescriptor{
+		Name: plugin.ParamName("sleep"),
+		Description: "time in seconds to wait before echoing message",
+		Required: false,
+		Default: "0",
+	})
+
+	pingDescriptor.AddCommand(pingCommand)
+
+	plugin.Register(&pingDescriptor)
 }
 
 func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
@@ -42,7 +62,7 @@ func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 		config: config,
 	}
 
-	commandMap :=  plugin.CommandMap{
+	commandMap :=  plugin.CommandFuncMap{
 		plugin.CommandName("ping"): p.ping,
 	}
 
@@ -58,8 +78,12 @@ func (p *Ping) StartPlugin() (derrors.Error) {
 func (p *Ping) StopPlugin() {
 }
 
-func (p *Ping) GetCommand(cmd plugin.CommandName) plugin.CommandFunc {
+func (p *Ping) GetCommandFunc(cmd plugin.CommandName) plugin.CommandFunc {
 	return p.commandMap[cmd]
+}
+
+func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
+	return &pingDescriptor
 }
 
 func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derrors.Error) {
