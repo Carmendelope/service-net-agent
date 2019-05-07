@@ -88,24 +88,32 @@ func (c *Config) MergeToParent() {
 	if c.parent == nil {
 		return
 	}
-	c.parent.writeLock.Lock()
-	defer c.parent.writeLock.Unlock()
 
 	c.parent.ReplaceSubtree(c.childKey, c.Viper)
 }
 
 func (c *Config) ReplaceSubtree(prefix string, config *viper.Viper) {
-	c.Unset(prefix)
-	c.MergeSubtree(prefix, config)
+	c.writeLock.Lock()
+	defer c.writeLock.Unlock()
+
+	c.UnsetLocked(prefix)
+	c.MergeSubtreeLocked(prefix, config)
 }
 
-func (c *Config) MergeSubtree(prefix string, config *viper.Viper) {
+func (c *Config) MergeSubtreeLocked(prefix string, config *viper.Viper) {
 	for k, v := range(config.AllSettings()) {
 		c.Set(fmt.Sprintf("%s.%s", prefix, k), v)
 	}
 }
 
 func (c *Config) Unset(key string) {
+	c.writeLock.Lock()
+	defer c.writeLock.Unlock()
+
+	c.UnsetLocked(key)
+}
+
+func (c *Config) UnsetLocked(key string) {
 	// Viper is not meant for deleting keys - we deep-copy everything,
 	// skipping keys that match
 	newConf := viper.New()
