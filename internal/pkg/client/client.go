@@ -46,19 +46,16 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 	log.Debug().Str("address", address).Msg("creating connection")
 
 	if opts.UseTLS {
-		var pool *x509.CertPool
+		// A nil certificate pool for RootCAs in a tls.Config uses
+		// the system certificates to validate servers, in a
+		// cross-platform way.
+		var pool *x509.CertPool = nil
 		var err error
 		if opts.CACert != "" {
 			pool = x509.NewCertPool()
 			derr := addCert(pool, opts.CACert)
 			if derr != nil {
 				return nil, derr
-			}
-		} else {
-			// Use system pool
-			pool, err = x509.SystemCertPool()
-			if err != nil {
-				return nil, derrors.NewInternalError("unable to initialize system certificate pool", err)
 			}
 		}
 
