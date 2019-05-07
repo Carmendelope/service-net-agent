@@ -9,6 +9,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+
+	"github.com/denisbrodbeck/machineid"
+	"github.com/rs/zerolog/log"
 )
 
 // In untrusted environments it is recommended to derive an
@@ -18,8 +21,12 @@ import (
 
 // Similar to sd_id128_get_machine_app_specific
 func AppSpecificMachineID(appId string) string {
-	machineID := MachineID()
-	if machineID == "" {
+	// machineid is a cross-platform library to retrieve a unique
+	// id for a machine. On Linux, it uses code similar to what's
+	// found in coreos/go-systemd.
+	machineID, err := machineid.ID()
+	if err != nil || machineID == "" {
+		log.Warn().Err(err).Msg("unable to get machine id")
 		return ""
 	}
 

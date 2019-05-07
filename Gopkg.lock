@@ -31,6 +31,14 @@
   version = "v4"
 
 [[projects]]
+  digest = "1:542892cb5d6c266aede82caaf053e84f103b627dccc6cb88cb3d9d175f51dea8"
+  name = "github.com/denisbrodbeck/machineid"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f07179bb15a0bec252453468aa607c670f5c12b5"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -62,6 +70,7 @@
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
+    "protoc-gen-go/descriptor",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
@@ -163,12 +172,12 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:67001bf5758aff7d6f0dbca4911411d976c3cb2b971c6ad72c8e3487f6b3b746"
+  digest = "1:c7de415441ba97ec2dd8a2545db64a8162c3fc0a13d54d4d79a112ffa80e8acf"
   name = "github.com/nalej/grpc-inventory-manager-go"
   packages = ["."]
   pruneopts = ""
-  revision = "a56fba6a42f6e7059c5a4b13df2b07b9f4b98855"
-  version = "v0.0.5"
+  revision = "d2f1b6d39febd7db926a82fe6475455bd67945b9"
+  version = "v0.0.8"
 
 [[projects]]
   digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
@@ -367,6 +376,8 @@
     "metadata",
     "naming",
     "peer",
+    "reflection",
+    "reflection/grpc_reflection_v1alpha",
     "resolver",
     "resolver/dns",
     "resolver/passthrough",
@@ -394,7 +405,9 @@
     "github.com/coreos/go-systemd/dbus",
     "github.com/coreos/go-systemd/unit",
     "github.com/coreos/go-systemd/util",
+    "github.com/denisbrodbeck/machineid",
     "github.com/nalej/derrors",
+    "github.com/nalej/grpc-common-go",
     "github.com/nalej/grpc-edge-controller-go",
     "github.com/nalej/grpc-inventory-go",
     "github.com/nalej/grpc-inventory-manager-go",
@@ -411,6 +424,7 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/metadata",
+    "google.golang.org/grpc/reflection",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
