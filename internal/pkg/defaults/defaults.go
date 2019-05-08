@@ -23,5 +23,6 @@ const (
 	ApplicationID = "allyourbasearebelongtonalej"
 
 	ConfigFile string = "etc" + string(os.PathSeparator) + "agent.yaml"
+	LogFile string = "log" + string(os.PathSeparator) + "agent.log"
 	BinDir string = "bin"
 )

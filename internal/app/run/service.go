@@ -65,6 +65,7 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 }
 
 func (s *Service) Run() (derrors.Error) {
+	printRegisteredPlugins()
 	s.Config.Print()
 
 	derr := s.RestartPlugins()

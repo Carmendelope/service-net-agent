@@ -75,6 +75,10 @@ func (i *Installer) Run() (derrors.Error) {
 		"--config",
 		i.Config.ConfigFile,
 	}
+
+	// Additional arguments based on configuration
+	args = append(args, extraArgs(i.Config)...)
+
 	derr = svcInstaller.Install(dest, args, defaults.AgentDescription)
 	if derr != nil {
 		return derr

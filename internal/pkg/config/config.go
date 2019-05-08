@@ -24,6 +24,7 @@ import (
 type Config struct {
 	Path string
 	ConfigFile string
+	LogFile string
 
 	// For plugins - calling write on a subtree will call write on parent
 	parent *Config
