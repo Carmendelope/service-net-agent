@@ -17,10 +17,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TBD - this package should not be OS-specific; that should be encapsulated
-// in nalej/sysinfo. We'll tackle that when we clean that package up and
-// introduce Windows compatibility.
-
 type Inventory struct {
 	*sysinfo.SysInfo
 }
