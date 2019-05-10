@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/nalej/service-net-agent/internal/app/run"
+	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/pkg/svcmgr"
 
@@ -52,6 +53,12 @@ func onRun() {
 	if err != nil {
 		Fail(err, "invalid configuration")
 	}
+
+	service.Client, err = client.FromConfig(service.Config)
+	if err != nil {
+		Fail(err, "unable to create edge controller client")
+	}
+	defer service.Client.Close()
 
 	manager, err := svcmgr.NewManager(defaults.AgentName, service)
 	if err != nil {

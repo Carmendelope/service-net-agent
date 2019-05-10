@@ -25,6 +25,7 @@ const pluginConfigKey = "plugins"
 
 type Service struct {
 	Config *config.Config
+	Client *client.AgentClient
 
 	stopChan chan bool
 	lastBeat time.Time
@@ -65,6 +66,10 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 }
 
 func (s *Service) Run() (derrors.Error) {
+	if s.Client == nil {
+		return derrors.NewInvalidArgumentError("client not set")
+	}
+
 	printRegisteredPlugins()
 	s.Config.Print()
 
@@ -76,19 +81,13 @@ func (s *Service) Run() (derrors.Error) {
 	interval := s.Config.GetDuration("agent.interval")
 	assetId := s.Config.GetString("agent.asset_id")
 
-	// Create client connection
-	client, derr := client.FromConfig(s.Config)
-	if derr != nil {
-		return derr
-	}
-
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
 	// Create worker to execute operations
 	worker := NewWorker(s.Config.GetSubConfig(pluginConfigKey))
 
 	// Create dispatcher for operations to workers
-	dispatcher, derr := NewDispatcher(client, worker, s.Config.GetInt("agent.opqueue_len"))
+	dispatcher, derr := NewDispatcher(s.Client, worker, s.Config.GetInt("agent.opqueue_len"))
 	if derr != nil {
 		return derr
 	}
@@ -98,7 +97,7 @@ func (s *Service) Run() (derrors.Error) {
 	defer ticker.Stop()
 
 	// Initial heartbeat so the edge controller knows we're running right away
-	_, derr = heartbeat(client, dispatcher, assetId)
+	_, derr = heartbeat(s.Client, dispatcher, assetId)
 	if derr != nil {
 		return derr
 	}
@@ -108,7 +107,7 @@ func (s *Service) Run() (derrors.Error) {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
-			ok, derr := heartbeat(client, dispatcher, assetId)
+			ok, derr := heartbeat(s.Client, dispatcher, assetId)
 			if derr != nil {
 				// Something is wrong with the dispatcher,
 				// we're not going to try to stop it.

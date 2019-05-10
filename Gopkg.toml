@@ -39,8 +39,13 @@
   version = "v0.0.4"
 
 [[constraint]]
+  name = "github.com/nalej/grpc-utils"
+  version = "v1.4.0"
+
+[[constraint]]
   name = "github.com/nalej/sysinfo"
-  version = "v1.0.0"
+  #version = "v1.0.0"
+  branch = "feature/NP-1258_Add_fake_sysinfo_for_tests"
 
 [[constraint]]
   name = "google.golang.org/grpc"

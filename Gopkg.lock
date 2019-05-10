@@ -210,7 +210,16 @@
   version = "v0.0.30"
 
 [[projects]]
-  digest = "1:25ad82a939814246092eb6afd66398e9448dc67d49c940b1b052fbef52ef96ee"
+  digest = "1:347aace88c837e2b1b65a7c603e1b74066e3ad9c26343a2001649e3a2354591b"
+  name = "github.com/nalej/grpc-utils"
+  packages = ["pkg/test"]
+  pruneopts = ""
+  revision = "926e5152669ee71c0e6904055ebe6cfb5492b599"
+  version = "v1.4.0"
+
+[[projects]]
+  branch = "feature/NP-1258_Add_fake_sysinfo_for_tests"
+  digest = "1:97c4a70b6a0cedb73d588920c0101f346a2b5757a48a3b6a93b7ab540f572647"
   name = "github.com/nalej/sysinfo"
   packages = [
     ".",
@@ -220,8 +229,7 @@
     "version",
   ]
   pruneopts = ""
-  revision = "5ddfb389bcaafe8d6cd688f2db66b8b5ff7ca6e7"
-  version = "v1.0.0"
+  revision = "6ace3922c936a9fb06fbe46688cdeb77d2b1aa96"
 
 [[projects]]
   digest = "1:a3735b0978a8b53fc2ac97a6f46ca1189f0712a00df86d6ec4cf26c1a25e6d77"
@@ -461,6 +469,7 @@
     "stats",
     "status",
     "tap",
+    "test/bufconn",
   ]
   pruneopts = ""
   revision = "25c4f928eaa6d96443009bd842389fb4fa48664e"
@@ -505,6 +514,7 @@
     "github.com/nalej/grpc-edge-controller-go",
     "github.com/nalej/grpc-inventory-go",
     "github.com/nalej/grpc-inventory-manager-go",
+    "github.com/nalej/grpc-utils/pkg/test",
     "github.com/nalej/sysinfo",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
@@ -521,6 +531,7 @@
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/reflection",
+    "google.golang.org/grpc/test/bufconn",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -129,6 +129,15 @@ func StopPlugin(name PluginName) derrors.Error {
 	return defaultRegistry.StopPlugin(name)
 }
 
+func (r *Registry) StopAll() {
+	for name, _ := range(r.running) {
+		r.StopPlugin(name)
+	}
+}
+
+func StopAll() {
+	defaultRegistry.StopAll()
+}
 
 func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
 	plugin, found := r.running[name]
