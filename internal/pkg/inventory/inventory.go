@@ -22,21 +22,20 @@ import (
 // introduce Windows compatibility.
 
 type Inventory struct {
-	sysinfo.SysInfo
+	*sysinfo.SysInfo
 }
 
 func NewInventory() (*Inventory, derrors.Error) {
 	log.Debug().Msg("gathering system inventory information")
 
-	i := &Inventory{sysinfo.SysInfo{}}
-	i.GetSysInfo()
+	i := &Inventory{sysinfo.NewSysInfo()}
 	log.Debug().Interface("sysinfo", i).Msg("inventory information")
 
 	return i, nil
 }
 
 func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
-	netInfo := []*grpc_inventory_go.NetworkingHardwareInfo{}
+	netInfo := make([]*grpc_inventory_go.NetworkingHardwareInfo, 0, len(i.Network))
 	for _, iface := range(i.Network) {
 		grpcIface := &grpc_inventory_go.NetworkingHardwareInfo{
 			Type: iface.Port,
@@ -45,12 +44,14 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		netInfo = append(netInfo, grpcIface)
 	}
 
-	cpuInfo := make([]*grpc_inventory_go.CPUInfo, i.CPU.Cpus)
-	for count := uint(0); count  < i.CPU.Cpus; count++ {
-		cpuInfo[count] = &grpc_inventory_go.CPUInfo{
-			Manufacturer: i.CPU.Vendor,
-			Model: i.CPU.Model,
-			NumCores: int32(i.CPU.Cores),
+	cpuInfo := []*grpc_inventory_go.CPUInfo{}
+	if i.CPU != nil {
+		for count := uint(0); count < i.CPU.Cpus; count++ {
+			cpuInfo = append(cpuInfo, &grpc_inventory_go.CPUInfo{
+				Manufacturer: i.CPU.Vendor,
+				Model: i.CPU.Model,
+				NumCores: int32(i.CPU.Cores),
+			})
 		}
 	}
 
@@ -65,15 +66,19 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 
 	// Set labels
 	labels := map[string]string{}
-	labels["chassis_vendor"] = i.Chassis.Vendor
-	labels["chassis_version"] = i.Chassis.Version
-	labels["chassis_serial"] = i.Chassis.Serial
-	labels["chassis_assettag"] = i.Chassis.AssetTag
-	labels["board_name"] = i.Board.Name
-	labels["board_vendor"] = i.Board.Vendor
-	labels["board_version"] = i.Board.Version
-	labels["board_serial"] = i.Board.Serial
-	labels["board_assettag"] = i.Board.AssetTag
+	if i.Chassis != nil {
+		labels["chassis_vendor"] = i.Chassis.Vendor
+		labels["chassis_version"] = i.Chassis.Version
+		labels["chassis_serial"] = i.Chassis.Serial
+		labels["chassis_assettag"] = i.Chassis.AssetTag
+	}
+	if i.Board != nil {
+		labels["board_name"] = i.Board.Name
+		labels["board_vendor"] = i.Board.Vendor
+		labels["board_version"] = i.Board.Version
+		labels["board_serial"] = i.Board.Serial
+		labels["board_assettag"] = i.Board.AssetTag
+	}
 
 	// Unset empty ones
 	for k, v := range(labels) {
@@ -82,19 +87,29 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		}
 	}
 
+	os := &grpc_inventory_go.OperatingSystemInfo{
+		Class: GetOSClass(),
+	}
+	if i.OS != nil {
+		os.Name = i.OS.Name
+		os.Architecture = i.OS.Architecture
+	}
+	if i.Kernel != nil {
+		os.Version = i.Kernel.Release
+	}
+
+	hardware := &grpc_inventory_go.HardwareInfo{
+		Cpus: cpuInfo,
+		NetInterfaces: netInfo,
+	}
+	if i.Memory != nil {
+		hardware.InstalledRam = int64(i.Memory.Size)
+	}
+
 	request := &grpc_edge_controller_go.AgentJoinRequest{
 		Labels: labels,
-		Os: &grpc_inventory_go.OperatingSystemInfo{
-			Name: i.OS.Name,
-			Version: i.Kernel.Release,
-			Architecture: i.OS.Architecture,
-			Class: GetOSClass(),
-		},
-		Hardware: &grpc_inventory_go.HardwareInfo{
-			Cpus: cpuInfo,
-			InstalledRam: int64(i.Memory.Size),
-			NetInterfaces: netInfo,
-		},
+		Os: os,
+		Hardware: hardware,
 		Storage: storageInfo,
 	}
 

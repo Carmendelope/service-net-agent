@@ -1,4 +1,4 @@
-// +build !linux
+// +build !linux,!windows
 
 /*
  * Copyright (C) 2019 Nalej - All Rights Reserved
@@ -17,7 +17,7 @@ import (
 type Implementation struct {
 }
 
-func NewImplementation(Runner) (*Implementation, derrors.Error) {
+func NewImplementation(string, Runner) (*Implementation, derrors.Error) {
 	i := &Implementation{
 	}
 

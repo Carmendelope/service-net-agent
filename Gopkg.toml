@@ -27,8 +27,8 @@
   version = "v0.0.4"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/nalej/sysinfo"
+  version = "v1.0.0"
 
 [[constraint]]
   name = "google.golang.org/grpc"
@@ -37,3 +37,7 @@
 [[constraint]]
   name = "github.com/coreos/go-systemd"
   version = "v19"
+
+[[constraint]]
+  name = "github.com/denisbrodbeck/machineid"
+  version = "v1.0.1"

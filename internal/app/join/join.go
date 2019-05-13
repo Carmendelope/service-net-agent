@@ -7,6 +7,8 @@ package join
 // Join Agent to Nalej Edge
 
 import (
+	"fmt"
+
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/grpc-edge-controller-go"
@@ -15,8 +17,8 @@ import (
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 	"github.com/nalej/service-net-agent/internal/pkg/inventory"
-	"github.com/nalej/service-net-agent/pkg/machine_id"
 
+	"github.com/denisbrodbeck/machineid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -97,7 +99,15 @@ func (j *Joiner) getRequest() (*grpc_edge_controller_go.AgentJoinRequest, derror
 	}
 
 	// Add agent ID
-	request.AgentId = machine_id.AppSpecificMachineID(defaults.ApplicationID)
+	id, err := machineid.ProtectedID(defaults.ApplicationID)
+	if err != nil {
+		return nil, derrors.NewInternalError("unable to retrieve machine id", err)
+	}
+
+	// Create dashed uuid format from application-specific machine id
+	// This uses only the first 16 bytes of the ID instead of the full
+	// 32, but that should still be unique.
+	request.AgentId = fmt.Sprintf("%s-%s-%s-%s-%s", id[0:8], id[8:12], id[12:16], id[16:20], id[20:32])
 	log.Info().Interface("inventory", request).Msg("system info")
 
 	return request, nil

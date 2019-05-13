@@ -146,7 +146,7 @@ func checkSystem() derrors.Error {
 	return nil
 }
 
-func Start(servicename string) derrors.Error {
+func start(servicename string) derrors.Error {
 	conn, err := dbus.NewSystemdConnection()
 	if err != nil {
 		return derrors.NewInternalError("unable to connect to system service manager", err)
@@ -163,13 +163,13 @@ func Start(servicename string) derrors.Error {
 	msg := <-msgChan
 	switch msg {
 	case "done":
-		log.Info().Msg("service started")
+		log.Info().Str("name", servicename).Msg("service started")
 	case "canceled", "timeout", "failed":
-		log.Error().Str("reason", msg).Msg("start failed")
+		log.Error().Str("reason", msg).Str("name", servicename).Msg("start failed")
 	case "dependency":
-		log.Error().Msg("service not started because of a failed dependency")
+		log.Error().Str("name", servicename).Msg("service not started because of a failed dependency")
 	case "skipped":
-		log.Warn().Msg("service skipped; service not applicable to currently running units")
+		log.Warn().Str("name", servicename).Msg("service skipped; service not applicable to currently running units")
 	}
 
 	return nil

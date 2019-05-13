@@ -31,6 +31,14 @@
   version = "v4"
 
 [[projects]]
+  digest = "1:542892cb5d6c266aede82caaf053e84f103b627dccc6cb88cb3d9d175f51dea8"
+  name = "github.com/denisbrodbeck/machineid"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f07179bb15a0bec252453468aa607c670f5c12b5"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -164,12 +172,12 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:84f8fa80972db326b82ee40f9da320181d59f032631a20e3f402838bc19ddd99"
+  digest = "1:c7de415441ba97ec2dd8a2545db64a8162c3fc0a13d54d4d79a112ffa80e8acf"
   name = "github.com/nalej/grpc-inventory-manager-go"
   packages = ["."]
   pruneopts = ""
-  revision = "7a97a05d9d957955746e42f7b0225b24cbc5bad9"
-  version = "v0.0.7"
+  revision = "d2f1b6d39febd7db926a82fe6475455bd67945b9"
+  version = "v0.0.8"
 
 [[projects]]
   digest = "1:0e5100c2c9fcced5b1c0f2306742cbd44dd401cfc52a4b90678c02277fb44ac2"
@@ -188,15 +196,18 @@
   version = "v0.0.30"
 
 [[projects]]
-  branch = "master"
-  digest = "1:eef92cca1f85f40354f1368f983812f302095325c04d3706e8ed458af3a45b8f"
+  digest = "1:25ad82a939814246092eb6afd66398e9448dc67d49c940b1b052fbef52ef96ee"
   name = "github.com/nalej/sysinfo"
   packages = [
     ".",
-    "cpuid",
+    "internal/pkg/cpuid",
+    "internal/pkg/sysinfo",
+    "internal/pkg/wmi",
+    "version",
   ]
   pruneopts = ""
-  revision = "48e08a85bdd4d6fec1688af1007f956800bb7fc4"
+  revision = "5ddfb389bcaafe8d6cd688f2db66b8b5ff7ca6e7"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:3d2c33720d4255686b9f4a7e4d3b94938ee36063f14705c5eb0f73347ed4c496"
@@ -272,7 +283,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:051f944c194dbaa160fa7d820701022677eef76d3b8d50382432894f68364e9c"
+  digest = "1:4f349a7da3e52df38345913607fb3daac185365588a633088107146283b48b46"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -284,15 +295,23 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "7f726cade0ab7c929c16ce0b5b25bd201e25f39f"
+  revision = "f4e77d36d62c17c2336347bb2670ddbd02d092b7"
 
 [[projects]]
   branch = "master"
-  digest = "1:8309671ea041a80cae0a80724f2ec1a29e1c2774027aec2d487a13306b41ecaf"
+  digest = "1:c83d1e034ab1f1cc75a5475bd2475da6cbc193b30fd617b77b63eadcba65d379"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+    "windows/registry",
+    "windows/svc",
+    "windows/svc/debug",
+    "windows/svc/eventlog",
+    "windows/svc/mgr",
+  ]
   pruneopts = ""
-  revision = "a43fa875dd822b81eb6d2ad538bc1f4caba169bd"
+  revision = "2953c62de483abe29031e197e72d3b7061f65f91"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -386,6 +405,7 @@
     "github.com/coreos/go-systemd/dbus",
     "github.com/coreos/go-systemd/unit",
     "github.com/coreos/go-systemd/util",
+    "github.com/denisbrodbeck/machineid",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-common-go",
     "github.com/nalej/grpc-edge-controller-go",
@@ -396,6 +416,11 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "golang.org/x/sys/windows",
+    "golang.org/x/sys/windows/svc",
+    "golang.org/x/sys/windows/svc/debug",
+    "golang.org/x/sys/windows/svc/eventlog",
+    "golang.org/x/sys/windows/svc/mgr",
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/metadata",
