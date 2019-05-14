@@ -26,7 +26,7 @@ var runCmd = &cobra.Command{
 	Short: "Run Service Net Agent",
 	Long: "Run Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup(cmd)
+		setup(cmd)
 		onRun()
 	},
 }
