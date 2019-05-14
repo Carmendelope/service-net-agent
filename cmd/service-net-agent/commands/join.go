@@ -20,7 +20,7 @@ var joinCmd = &cobra.Command{
 	Short: "Join Service Net Agent",
 	Long: "Join Service Net Agent to Nalej Edge through Edge Controller",
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup(cmd)
+		setup(cmd)
 		onJoin()
 	},
 }

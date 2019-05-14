@@ -24,7 +24,7 @@ var installCmd = &cobra.Command{
 	Short: "Install Service Net Agent",
 	Long: "Install Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup(cmd)
+		setup(cmd)
 		onInstall()
 	},
 }

@@ -38,7 +38,7 @@ var rootCmd = &cobra.Command{
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup(cmd)
+		setup(cmd)
 		cmd.Help()
 	},
 }
@@ -79,13 +79,13 @@ func Execute() {
 }
 
 // Initialize the agent
-func Setup(cmd *cobra.Command) {
+func setup(cmd *cobra.Command) {
 	// Logging
 	// If log file is not specifically set, we should look in root path
 	if !cmd.Flag("logfile").Changed {
 		logFile = filepath.Join(rootConfig.Path, defaults.LogFile)
 	}
-	err := SetupLogging(logToFile, logFile)
+	err := setupLogging(logToFile, logFile)
 	if err != nil {
 		Fail(err, "failed setting up logging")
 	}
@@ -110,8 +110,8 @@ func Setup(cmd *cobra.Command) {
 	}
 }
 
-// SetupLogging sets the debug level and console logging if required.
-func SetupLogging(toFile bool, file string) derrors.Error {
+// setupLogging sets the debug level and console logging if required.
+func setupLogging(toFile bool, file string) derrors.Error {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if debugLevel {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
