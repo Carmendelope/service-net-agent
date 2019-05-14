@@ -21,6 +21,14 @@ type AvailablePluginMap map[PluginName]*PluginDescriptor
 // Type for mapping plugin names to running plugins
 type RunningPluginMap map[PluginName]Plugin
 
+// Dynamic type to list current status of plugins
+type RegistryEntry struct {
+	*PluginDescriptor
+	Running bool
+}
+
+type RegistryEntryMap map[PluginName]RegistryEntry
+
 type Registry struct {
 	available AvailablePluginMap
 	running RunningPluginMap
@@ -44,12 +52,29 @@ func (r *Registry) Register(plugin *PluginDescriptor) derrors.Error {
 	}
 
 	r.available[plugin.Name] = plugin
-	log.Debug().Str("name", plugin.Name.String()).Msg("plugin registered")
 	return nil
 }
 
 func Register(plugin *PluginDescriptor) derrors.Error {
 	return defaultRegistry.Register(plugin)
+}
+
+func (r *Registry) ListPlugins() RegistryEntryMap {
+	entries := make(RegistryEntryMap, len(r.available))
+
+	for name, descriptor := range(r.available) {
+		_, running := r.running[name]
+		entries[name] = RegistryEntry{
+			PluginDescriptor: descriptor,
+			Running: running,
+		}
+	}
+
+	return entries
+}
+
+func ListPlugins() RegistryEntryMap {
+	return defaultRegistry.ListPlugins()
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {

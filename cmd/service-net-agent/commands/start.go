@@ -20,7 +20,7 @@ var startCmd = &cobra.Command{
 	Long: "Request system to start Service Net Agent service",
 	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		Setup(cmd)
+		setup(cmd)
 		onStart()
 	},
 }
