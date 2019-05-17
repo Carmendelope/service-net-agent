@@ -78,6 +78,11 @@ func ListPlugins() RegistryEntryMap {
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
+	// Easier to handle nil configuration here
+	if conf == nil {
+		conf = viper.New()
+	}
+
 	log.Debug().Str("name", name.String()).Interface("config", conf.AllSettings()).Msg("starting plugin")
 	plugin, found := r.available[name]
 	if !found {
@@ -124,6 +129,15 @@ func StopPlugin(name PluginName) derrors.Error {
 	return defaultRegistry.StopPlugin(name)
 }
 
+func (r *Registry) StopAll() {
+	for name, _ := range(r.running) {
+		r.StopPlugin(name)
+	}
+}
+
+func StopAll() {
+	defaultRegistry.StopAll()
+}
 
 func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
 	plugin, found := r.running[name]

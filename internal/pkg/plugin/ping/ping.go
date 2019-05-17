@@ -24,7 +24,7 @@ import (
 // - example of actual functionality in start/stop
 
 var pingDescriptor = plugin.PluginDescriptor{
-	Name: plugin.PluginName("ping"),
+	Name: "ping",
 	Description: "example ping plugin",
 	NewFunc: NewPing,
 }
@@ -37,16 +37,16 @@ type Ping struct {
 
 func init() {
 	pingCommand := plugin.CommandDescriptor{
-		Name: plugin.CommandName("ping"),
+		Name: "ping",
 		Description: "echo command",
 	}
 	pingCommand.AddParam(plugin.ParamDescriptor{
-		Name: plugin.ParamName("msg"),
+		Name: "msg",
 		Description: "message to be echoed",
 		Required: false,
 	})
 	pingCommand.AddParam(plugin.ParamDescriptor{
-		Name: plugin.ParamName("sleep"),
+		Name: "sleep",
 		Description: "time in seconds to wait before echoing message",
 		Required: false,
 		Default: "0",
@@ -63,7 +63,7 @@ func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 	}
 
 	commandMap :=  plugin.CommandFuncMap{
-		plugin.CommandName("ping"): p.ping,
+		"ping": p.ping,
 	}
 
 	p.commandMap = commandMap
