@@ -12,7 +12,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-inventory-go"
+	"github.com/nalej/grpc-edge-controller-go"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
@@ -160,8 +160,9 @@ func heartbeat(client *client.AgentClient, dispatcher *Dispatcher, assetId strin
 	var beatSent = false
 
 	// Create default heartbeat message
-	beatRequest := &grpc_inventory_go.AssetId{
+	beatRequest := &grpc_edge_controller_go.AgentCheckRequest{
 		AssetId: assetId,
+		Timestamp: time.Now().UTC().Unix(),
 	}
 
 	ctx := client.GetContext()
