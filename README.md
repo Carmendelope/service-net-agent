@@ -30,7 +30,7 @@ type Plugin interface {
 
 Internally, the plugin has a mapping from command names (`type CommandName string`) to command execution functions (`type CommandFunc func(params map[string]string) (string, derrors.Error)`), which could be static or dynamic. The `GetCommand` function returns the appropriate execution function for a command.
 
-Each heartbeat, the main loop calls the `Beat()` method of each running plugin to return some plugin-specific data. If a plugin has no data to return, it should return `(nil, nil)`. If it is designed to return data as part of the heartbeat message, it should have an entry in the `edge-controller.Plugin` enum in the gRPC API and a specific data entity which is mentioned in the `OneOf` in `edge-controller.PluginData.data`. `Beat()` returns a `PluginHeartbeatData` interface, which has a method `ToGRPC()` that should populate the plugin-specific gRPC API fields.
+Each heartbeat, the main loop calls the `Beat()` method of each running plugin to return some plugin-specific data. If a plugin has no data to return, it should return `(nil, nil)`. If it is designed to return data as part of the heartbeat message, it should have an entry in the `edge-controller.Plugin` enum in the gRPC API and a specific data entity which is mentioned in the `OneOf` in `edge-controller.PluginData.data`. `Beat()` returns a `PluginHeartbeatData` interface, which has a method `ToGRPC()` that should populate the plugin-specific gRPC API fields. A companion-plugin on the Edge Controller that deals with the data is also needed.
 
 An example plugin is provided in `internal/pkg/plugin/ping`.
 
