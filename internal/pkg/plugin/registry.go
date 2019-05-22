@@ -174,6 +174,7 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 
 	// Collect data in parallel
 	for name, plugin := range(r.running) {
+		log.Info().Str("e", name.String()).Msg("p")
 		beatWaitGroup.Add(1)
 		go func(){
 			defer beatWaitGroup.Done()
@@ -184,7 +185,7 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 			if !timedout {
 				// Always set err so we know we've processed this plugin
 				errMap[name] = err
-				if err == nil {
+				if data != nil && err == nil {
 					dataList = append(dataList, data)
 				}
 			}
@@ -213,20 +214,25 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 		timedout = true
 		dataLock.Unlock()
 
-		// Set errors for interrupted Beats
-		for name := range(r.running) {
-			err, found := errMap[name]
-			if !found {
+	}
+
+	// Set errors for interrupted Beats
+	for name := range(r.running) {
+		err, found := errMap[name]
+		if !found {
+			if timedout {
 				// Processing timed out
 				errMap[name] = derrors.NewDeadlineExceededError("plugin beat timed out").WithParams(name.String())
-			}
-
-			// Sanitize error map while we're at it
-			if err == nil {
-				delete(errMap, name)
+			} else {
+				// Should have been found!
+				errMap[name] = derrors.NewAbortedError("plugin beat did not run").WithParams(name.String())
 			}
 		}
 
+		// Sanitize error map while we're at it
+		if err == nil {
+			delete(errMap, name)
+		}
 	}
 
 	return dataList, errMap

@@ -45,6 +45,10 @@ var _ = ginkgo.Describe("plugin", func() {
 	ginkgo.Context("Registry", func() {
 	// Importing ping already executes a lot of functionality. We'll just check
 	// if the result is what we expect
+		ginkgo.AfterEach(func() {
+			plugin.StopAll()
+		})
+
 		ginkgo.It("should register and list plugins", func() {
 			plugins := plugin.ListPlugins()
 
@@ -86,10 +90,6 @@ var _ = ginkgo.Describe("plugin", func() {
 			gomega.Expect(err).To(gomega.Succeed())
 			err = plugin.StartPlugin("ping", nil)
 			gomega.Expect(err).To(gomega.HaveOccurred())
-
-			// Stop to make sure the test doesn't have side effects
-			err = plugin.StopPlugin("ping")
-			gomega.Expect(err).To(gomega.Succeed())
 		})
 		ginkgo.It("should not stop a stopped plugin", func() {
 			err := plugin.StopPlugin("ping")
@@ -100,10 +100,6 @@ var _ = ginkgo.Describe("plugin", func() {
 			gomega.Expect(err).To(gomega.Succeed())
 
 			gomega.Expect(plugin.ExecuteCommand(context.Background(), "ping", "ping", nil)).To(gomega.Equal("pong"))
-
-			err = plugin.StopPlugin("ping")
-			gomega.Expect(err).To(gomega.Succeed())
-
 		})
 		ginkgo.It("should not execute a command on a stopped plugin", func() {
 			_, err := plugin.ExecuteCommand(context.Background(), "ping", "ping", nil)
@@ -120,9 +116,19 @@ var _ = ginkgo.Describe("plugin", func() {
 
 			_, err = plugin.ExecuteCommand(context.Background(), "ping", "invalid", nil)
 			gomega.Expect(err).To(gomega.HaveOccurred())
-
-			err = plugin.StopPlugin("ping")
+		})
+		ginkgo.It("should be able to collect heartbeat data from running plugins", func() {
+			err := plugin.StartPlugin("ping", nil)
 			gomega.Expect(err).To(gomega.Succeed())
+
+			data, errlist := plugin.CollectHeartbeatData(context.Background())
+			gomega.Expect(errlist).To(gomega.BeEmpty())
+			gomega.Expect(data).To(gomega.HaveLen(1))
+		})
+		ginkgo.It("should not collect heartbeat data from stopped plugins", func() {
+			data, err := plugin.CollectHeartbeatData(context.Background())
+			gomega.Expect(err).To(gomega.BeEmpty())
+			gomega.Expect(data).To(gomega.BeEmpty())
 		})
 	})
 })

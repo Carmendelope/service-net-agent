@@ -87,7 +87,7 @@ func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
 }
 
 func (p *Ping) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
-	return nil, nil
+	return &PingData{}, nil
 }
 
 func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derrors.Error) {
