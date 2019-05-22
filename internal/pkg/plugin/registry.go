@@ -8,6 +8,7 @@ package plugin
 
 import (
 	"context"
+	"sync"
 
 	"github.com/nalej/derrors"
 
@@ -159,4 +160,78 @@ func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd Comm
 
 func ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
 	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
+}
+
+func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
+	dataList := []PluginHeartbeatData{}
+	errMap := make(map[PluginName]derrors.Error, len(r.running))
+	timedout := false
+	// Lock for collecting results
+	var dataLock sync.Mutex
+
+	// Wait for plugin Beats to execute in parallel
+	var beatWaitGroup sync.WaitGroup
+
+	// Collect data in parallel
+	for name, plugin := range(r.running) {
+		beatWaitGroup.Add(1)
+		go func(){
+			defer beatWaitGroup.Done()
+			data, err := plugin.Beat(ctx)
+
+			dataLock.Lock()
+			// Don't add more when we already timed out
+			if !timedout {
+				// Always set err so we know we've processed this plugin
+				errMap[name] = err
+				if err == nil {
+					dataList = append(dataList, data)
+				}
+			}
+			dataLock.Unlock()
+		}()
+	}
+
+	// Interruptable wait
+	doneChan := make(chan struct{})
+	go func(){
+		beatWaitGroup.Wait()
+		close(doneChan)
+	}()
+
+	select {
+	case <-doneChan:
+		// All good - everybody is done and we have our results
+		break
+	case <-ctx.Done():
+		// Timeout - check which functions did time out and set errors
+		// accordingly
+
+		// Make sure the running goroutines don't add anything else
+		// while we're collecting results
+		dataLock.Lock()
+		timedout = true
+		dataLock.Unlock()
+
+		// Set errors for interrupted Beats
+		for name := range(r.running) {
+			err, found := errMap[name]
+			if !found {
+				// Processing timed out
+				errMap[name] = derrors.NewDeadlineExceededError("plugin beat timed out").WithParams(name.String())
+			}
+
+			// Sanitize error map while we're at it
+			if err == nil {
+				delete(errMap, name)
+			}
+		}
+
+	}
+
+	return dataList, errMap
+}
+
+func CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
+	return defaultRegistry.CollectHeartbeatData(ctx)
 }

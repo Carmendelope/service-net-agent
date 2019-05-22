@@ -12,8 +12,6 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-edge-controller-go"
-
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/plugin"
@@ -79,6 +77,7 @@ func (s *Service) Run() (derrors.Error) {
 	}
 
 	interval := s.Config.GetDuration("agent.interval")
+	beatTimeout := interval / 2
 	assetId := s.Config.GetString("agent.asset_id")
 
 	log.Debug().Str("interval", interval.String()).Msg("running")
@@ -92,12 +91,18 @@ func (s *Service) Run() (derrors.Error) {
 		return derr
 	}
 
+	beater := Beater{
+		client: s.Client,
+		dispatcher: dispatcher,
+		assetId: assetId,
+	}
+
 	// Start main heartbeat ticker
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	// Initial heartbeat so the edge controller knows we're running right away
-	_, derr = heartbeat(s.Client, dispatcher, assetId)
+	_, derr = beater.Beat(beatTimeout)
 	if derr != nil {
 		return derr
 	}
@@ -107,7 +112,7 @@ func (s *Service) Run() (derrors.Error) {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
-			ok, derr := heartbeat(s.Client, dispatcher, assetId)
+			ok, derr := beater.Beat(beatTimeout)
 			if derr != nil {
 				// Something is wrong with the dispatcher,
 				// we're not going to try to stop it.
@@ -152,46 +157,4 @@ func (s *Service) Alive() (bool, derrors.Error) {
 		return false, nil
 	}
 	return true, nil
-}
-
-func heartbeat(client *client.AgentClient, dispatcher *Dispatcher, assetId string) (bool, derrors.Error) {
-	log.Debug().Msg("sending heartbeat to edge controller")
-
-	var beatSent = false
-
-	// Create default heartbeat message
-	beatRequest := &grpc_edge_controller_go.AgentCheckRequest{
-		AssetId: assetId,
-		Timestamp: time.Now().UTC().Unix(),
-	}
-
-	ctx := client.GetContext()
-	result, err := client.AgentCheck(ctx, beatRequest)
-	if err != nil {
-		log.Warn().Err(err).Msg("failed sending heartbeat")
-		return beatSent, nil
-	}
-	beatSent = true
-
-	operations := result.GetPendingRequests()
-	for _, operation := range(operations) {
-		// Check asset id
-		if operation.GetAssetId() != assetId {
-			log.Warn().Str("operation_id", operation.GetOperationId()).
-				Str("asset_id", operation.GetAssetId()).
-				Msg("received operation with non-matching asset id")
-			continue
-		}
-
-		derr := dispatcher.Dispatch(operation)
-		if derr != nil {
-			// Little risky to bail out of main loop when this fails,
-			// but the scheduling of an operation really shouldn't
-			// fail unless something is actually broken. We have a
-			// watchdog that will restart the agent in such case.
-			return beatSent, derr
-		}
-	}
-
-	return beatSent, nil
 }
