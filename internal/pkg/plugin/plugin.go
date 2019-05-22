@@ -121,7 +121,7 @@ type PluginHeartbeatData interface {
 
 type PluginHeartbeatDataList []PluginHeartbeatData
 func (d PluginHeartbeatDataList) ToGRPC() []*grpc_edge_controller_go.PluginData {
-	out := make ([]*grpc_edge_controller_go.PluginData, len(d))
+	out := make ([]*grpc_edge_controller_go.PluginData, 0, len(d))
 	for _, data := range(d) {
 		out = append(out, data.ToGRPC())
 	}
