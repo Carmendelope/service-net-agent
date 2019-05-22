@@ -174,7 +174,6 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 
 	// Collect data in parallel
 	for name, plugin := range(r.running) {
-		log.Info().Str("e", name.String()).Msg("p")
 		beatWaitGroup.Add(1)
 		go func(){
 			defer beatWaitGroup.Done()
@@ -227,10 +226,8 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 				// Should have been found!
 				errMap[name] = derrors.NewAbortedError("plugin beat did not run").WithParams(name.String())
 			}
-		}
-
-		// Sanitize error map while we're at it
-		if err == nil {
+		} else if err == nil {
+			// Sanitize error map while we're at it
 			delete(errMap, name)
 		}
 	}

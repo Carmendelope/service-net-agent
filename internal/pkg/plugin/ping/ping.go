@@ -87,6 +87,10 @@ func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
 }
 
 func (p *Ping) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
+	wait := p.config.GetDuration("beatsleep")
+	if wait > 0 {
+		time.Sleep(wait)
+	}
 	return &PingData{}, nil
 }
 

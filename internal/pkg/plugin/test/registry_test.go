@@ -6,12 +6,17 @@ package test
 
 import (
 	"context"
+	"time"
+
+	"github.com/nalej/derrors"
 
 	"github.com/nalej/service-net-agent/internal/pkg/plugin"
 	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/ping"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
+
+	"github.com/spf13/viper"
 )
 
 var _ = ginkgo.Describe("plugin", func() {
@@ -124,6 +129,18 @@ var _ = ginkgo.Describe("plugin", func() {
 			data, errlist := plugin.CollectHeartbeatData(context.Background())
 			gomega.Expect(errlist).To(gomega.BeEmpty())
 			gomega.Expect(data).To(gomega.HaveLen(1))
+		})
+		ginkgo.It("should be able to timeout on heartbeat data collection", func() {
+			conf := viper.New()
+			conf.Set("beatsleep", "10s")
+			err := plugin.StartPlugin("ping", conf)
+			gomega.Expect(err).To(gomega.Succeed())
+
+			ctx, _ := context.WithDeadline(context.Background(), time.Now())
+			data, errlist := plugin.CollectHeartbeatData(ctx)
+			gomega.Expect(errlist).To(gomega.HaveLen(1))
+			gomega.Expect(errlist["ping"].Type()).To(gomega.Equal(derrors.DeadlineExceeded))
+			gomega.Expect(data).To(gomega.BeEmpty())
 		})
 		ginkgo.It("should not collect heartbeat data from stopped plugins", func() {
 			data, err := plugin.CollectHeartbeatData(context.Background())
