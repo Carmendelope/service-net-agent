@@ -86,6 +86,14 @@ func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
 	return &pingDescriptor
 }
 
+func (p *Ping) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
+	wait := p.config.GetDuration("beatsleep")
+	if wait > 0 {
+		time.Sleep(wait)
+	}
+	return &PingData{}, nil
+}
+
 func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derrors.Error) {
 	var msgString string
 	msg, found := params["msg"]

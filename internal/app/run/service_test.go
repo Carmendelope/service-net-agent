@@ -14,34 +14,6 @@ import (
 )
 
 var _ = ginkgo.Describe("service", func() {
-	ginkgo.Context("heartbeat", func(){
-		ginkgo.It("should send heartbeat", func() {
-			d, derr := NewDispatcher(testClient, NewWorker(testConfig), 10)
-			gomega.Expect(derr).To(gomega.Succeed())
-
-			cur := testHandler.GetNumChecks()
-			gomega.Expect(heartbeat(testClient, d, "testasset")).To(gomega.BeTrue())
-			gomega.Expect(testHandler.GetNumChecks()).To(gomega.Equal(cur + 1))
-		})
-
-		ginkgo.It("should dispatch received operations", func() {
-			d, derr := NewDispatcher(testClient, NewWorker(testConfig), 10)
-			gomega.Expect(derr).To(gomega.Succeed())
-
-			cur := testHandler.GetNumCallbacks()
-			gomega.Expect(heartbeat(testClient, d, "test-asset")).To(gomega.BeTrue())
-
-			// Wait until all operations are dealt with
-			close(d.opQueue)
-			d.opWorkerWaitgroup.Wait()
-			close(d.resQueue)
-			d.resWorkerWaitgroup.Wait()
-
-			// Three operations, scheduled and succeeded, equals 6 callbacks
-			gomega.Expect(testHandler.GetNumCallbacks()).To(gomega.Equal(cur + 6))
-		})
-	})
-
 	ginkgo.It("should start, run and stop", func() {
 		s := Service{
 			Config: testConfig,

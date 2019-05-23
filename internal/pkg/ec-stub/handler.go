@@ -13,7 +13,6 @@ import (
 
 	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/grpc-edge-controller-go"
-	"github.com/nalej/grpc-inventory-go"
 	"github.com/nalej/grpc-inventory-manager-go"
 
 	"github.com/rs/zerolog/log"
@@ -41,7 +40,7 @@ func (h *Handler) AgentJoin(ctx context.Context, request *grpc_edge_controller_g
 	return response, nil
 }
 
-func (h *Handler) AgentCheck(ctx context.Context, request *grpc_inventory_go.AssetId) (*grpc_edge_controller_go.CheckResult, error) {
+func (h *Handler) AgentCheck(ctx context.Context, request *grpc_edge_controller_go.AgentCheckRequest) (*grpc_edge_controller_go.CheckResult, error) {
 	log.Info().Interface("request", request).Msg("heartbeat received")
 	atomic.AddUint64(&h.checksReceived, 1)
 	response := &grpc_edge_controller_go.CheckResult{
