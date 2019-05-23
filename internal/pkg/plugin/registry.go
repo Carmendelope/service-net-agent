@@ -173,8 +173,12 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 	var beatWaitGroup sync.WaitGroup
 
 	// Collect data in parallel
-	for name, plugin := range(r.running) {
+	for n, p := range(r.running) {
 		beatWaitGroup.Add(1)
+		// We need to copy the variables to something local to this
+		// loop - the range will modify them and the running routines
+		// will use the modified values otherwise
+		name, plugin := n, p
 		go func(){
 			defer beatWaitGroup.Done()
 			data, err := plugin.Beat(ctx)
@@ -209,6 +213,7 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 
 		// Make sure the running goroutines don't add anything else
 		// while we're collecting results
+		log.Warn().Msg("Timeout collecting plugin heartbeat data")
 		dataLock.Lock()
 		timedout = true
 		dataLock.Unlock()
@@ -221,9 +226,11 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 		if !found {
 			if timedout {
 				// Processing timed out
+				log.Warn().Str("plugin", name.String()).Msg("Plugin timed out")
 				errMap[name] = derrors.NewDeadlineExceededError("plugin beat timed out").WithParams(name.String())
 			} else {
 				// Should have been found!
+				log.Warn().Str("plugin", name.String()).Msg("Plugin did not run while it should have")
 				errMap[name] = derrors.NewAbortedError("plugin beat did not run").WithParams(name.String())
 			}
 		} else if err == nil {

@@ -7,6 +7,7 @@ package run
 // Available plugins
 
 import (
+	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/metrics"
 	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/ping"
 
 	"github.com/nalej/service-net-agent/internal/pkg/plugin"

@@ -30,6 +30,7 @@ var pingDescriptor = plugin.PluginDescriptor{
 }
 
 type Ping struct {
+	plugin.BasePlugin
 	config *viper.Viper
 
 	commandMap plugin.CommandFuncMap
@@ -69,13 +70,6 @@ func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 	p.commandMap = commandMap
 
 	return p, nil
-}
-
-func (p *Ping) StartPlugin() (derrors.Error) {
-	return nil
-}
-
-func (p *Ping) StopPlugin() {
 }
 
 func (p *Ping) GetCommandFunc(cmd plugin.CommandName) plugin.CommandFunc {
