@@ -173,13 +173,12 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 	var beatWaitGroup sync.WaitGroup
 
 	// Collect data in parallel
-	for n, p := range(r.running) {
+	for name, plugin := range(r.running) {
 		beatWaitGroup.Add(1)
 		// We need to copy the variables to something local to this
 		// loop - the range will modify them and the running routines
 		// will use the modified values otherwise
-		name, plugin := n, p
-		go func(){
+		go func(name PluginName, plugin Plugin){
 			defer beatWaitGroup.Done()
 			data, err := plugin.Beat(ctx)
 
@@ -193,7 +192,7 @@ func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDat
 				}
 			}
 			dataLock.Unlock()
-		}()
+		}(name, plugin)
 	}
 
 	// Interruptable wait
