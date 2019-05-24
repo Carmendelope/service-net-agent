@@ -1,10 +1,3 @@
-#
-#  Copyright 2018 Nalej
-# 
-
-include scripts/Makefile.golang
+include scripts/Makefile.common
 
 .DEFAULT_GOAL := all
-
-# Name of the target applications to be built
-APPS=service-net-agent
