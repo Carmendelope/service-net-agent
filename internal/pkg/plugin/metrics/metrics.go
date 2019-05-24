@@ -17,6 +17,7 @@ import (
 
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/agent"
+	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/inputs"
 	_ "github.com/influxdata/telegraf/plugins/inputs/cpu"
 	_ "github.com/influxdata/telegraf/plugins/inputs/net"
@@ -44,24 +45,64 @@ func init() {
 }
 
 type RunningInput struct {
-	InputName string
+	Config *InputConfig
 	Input telegraf.Input
+
+	filter filter.Filter
 }
 
-func NewRunningInput(name string, input telegraf.Input) *RunningInput {
-	rp := &RunningInput{
-		InputName: name,
-		Input: input,
+func NewRunningInput(input telegraf.Input, config *InputConfig) (*RunningInput, derrors.Error) {
+	// Set config
+	configTable, derr := CreateTomlTable(config.Config)
+	if derr != nil {
+		return nil, derr
+	}
+	err := toml.UnmarshalTable(configTable, input)
+	if err != nil {
+		return nil, derrors.NewInternalError("failed parsing config", err)
 	}
 
-	return rp
+	f, err := filter.Compile(config.Fields)
+	if err != nil {
+		return nil, derrors.NewInternalError("error creating fields filter").WithParams(config.Name)
+	}
+
+	r := &RunningInput{
+		Config: config,
+		Input: input,
+		filter: f,
+	}
+
+	return r, nil
 }
 
 func (i *RunningInput) Name() string {
-	return i.InputName
+	return i.Config.Name
 }
 
 func (i *RunningInput) MakeMetric(metric telegraf.Metric) telegraf.Metric {
+	// No filter means all fields
+	if i.filter == nil {
+		return metric
+	}
+
+	// Include requested fields
+	filterKeys := []string{}
+	for _, field := range(metric.FieldList()) {
+		if !i.filter.Match(field.Key) {
+			filterKeys = append(filterKeys, field.Key)
+		}
+	}
+	for _, key := range(filterKeys) {
+		metric.RemoveField(key)
+	}
+
+	// Drop empty metrics
+	if len(metric.FieldList()) == 0 {
+		metric.Drop()
+		return nil
+	}
+
 	return metric
 }
 
@@ -95,28 +136,8 @@ on the plugin configuration. See:
 - https://github.com/influxdata/telegraf/blob/master/internal/models/makemetric.go
 - https://github.com/influxdata/telegraf/blob/master/docs/CONFIGURATION.md
   (sections on Input Plugin and Metric Filtering)
-We will implement filtering if and when needed for our purposes - there is
-no need to re-implement the same structure as Telegraf. For now, we just pass
-the original metric.
-*/
-
-/*
-plugin config models.InputConfig
-- name
-- interval
-- name_prefix
-- name_suffix
-- name_override
-- tags
-- filter
- - namepass
- - namedrop
- - fieldpass
- - fielddrop
- - tagpass
- - tagdrop
- - tagexclude
- - taginclude
+We have implemented filtering just as a list of metrics to include, that's all we
+need and it makes it explicit what we actually collect.
 */
 
 func CreateTomlTable(config map[string]interface{}) (*ast.Table, derrors.Error) {
@@ -143,34 +164,53 @@ func CreateTomlTable(config map[string]interface{}) (*ast.Table, derrors.Error) 
 	return table, nil
 }
 
+type InputConfig struct {
+	Name string
+	Config InputConfigMap
+	Fields []string
+}
+
+type InputConfigMap map[string]interface{}
+
+var Inputs = []InputConfig{
+	InputConfig{
+		Name: "cpu",
+		Config: InputConfigMap{
+			"percpu": true,
+			"totalcpu": false,
+			"collect_cpu_time": true,
+			"report_active": false,
+		},
+		Fields: []string{
+			"time_*",
+		},
+	},
+	InputConfig{
+		Name: "net",
+	},
+}
+
+
 func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {
-	inputsList := []*RunningInput{}
+	inputsList := make([]*RunningInput, 0, len(Inputs))
 
-	name := "cpu"
-	configMap := map[string]interface{}{
-		"percpu": true,
-		"totalcpu": false,
-		"collect_cpu_time": true,
-		"report_active": false,
-		// include-exclude filter
-	}
-	configTable, derr := CreateTomlTable(configMap)
-	if derr != nil {
-		return nil, derr
+	for _, config := range(Inputs) {
+		// Get plugin from Telegraf registry
+		inputCreator, found := inputs.Inputs[config.Name]
+		if !found {
+			return nil, derrors.NewUnavailableError("input not available").WithParams(config.Name)
+		}
+		input := inputCreator()
+
+		running, derr := NewRunningInput(input, &config)
+		if derr != nil {
+			return nil, derr
+		}
+
+		log.Debug().Interface("input", input).Msg("input configured")
+		inputsList = append(inputsList, running)
 	}
 
-	inputCreator, found := inputs.Inputs[name]
-	if !found {
-		return nil, derrors.NewUnavailableError("input not available").WithParams(name)
-	}
-
-	input := inputCreator()
-	err := toml.UnmarshalTable(configTable, input)
-	if err != nil {
-		return nil, derrors.NewInternalError("failed parsing config", err)
-	}
-	log.Debug().Interface("input", input).Msg("input configured")
-	inputsList = append(inputsList, NewRunningInput(name, input))
 	m := &Metrics{
 		inputs: inputsList,
 	}
