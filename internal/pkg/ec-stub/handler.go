@@ -47,10 +47,26 @@ func (h *Handler) AgentCheck(ctx context.Context, request *grpc_edge_controller_
 		PendingRequests: []*grpc_inventory_manager_go.AgentOpRequest{
 			&grpc_inventory_manager_go.AgentOpRequest{
 				AssetId: "test-asset",
-				Plugin: "metrics",
+				Plugin: "ping",
 				Operation: "start",
 				OperationId: h.nextOpID(),
+				Params: map[string]string{
+					"test-key": "test-val",
+				},
 			},
+			&grpc_inventory_manager_go.AgentOpRequest{
+				AssetId: "test-asset",
+				Plugin: "ping",
+				Operation: "ping",
+				OperationId: h.nextOpID(),
+			},
+			&grpc_inventory_manager_go.AgentOpRequest{
+				AssetId: "test-asset",
+				Plugin: "ping",
+				Operation: "stop",
+				OperationId: h.nextOpID(),
+			},
+
 		},
 	}
 
