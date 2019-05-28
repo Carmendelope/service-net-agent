@@ -1,11 +1,11 @@
 {
-    "language": "golang",
-    "application_list": [
-        "service-net-agent"
-    ],
-    "tools": [
-        "azure",
-        "docker",
-        "k8s"
-    ]
+  "language": "golang",
+  "application_list": [
+    "service-net-agent"
+  ],
+  "tools": [
+    "azure",
+    "docker",
+    "k8s"
+  ]
 }
