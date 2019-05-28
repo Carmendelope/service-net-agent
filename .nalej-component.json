@@ -3,9 +3,5 @@
   "application_list": [
     "service-net-agent"
   ],
-  "tools": [
-    "azure",
-    "docker",
-    "k8s"
-  ]
+  "tools": []
 }
