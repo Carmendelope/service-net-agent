@@ -78,7 +78,7 @@ func (m *Metrics) GetPluginDescriptor() (*plugin.PluginDescriptor) {
         return &metricsDescriptor
 }
 
-func (m *Metrics) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
+func (m *Metrics) Beat(ctx context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
 	metricChan := make(chan telegraf.Metric, 100)
 
 	// We can collect and process metrics in parallel
@@ -92,19 +92,36 @@ func (m *Metrics) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Err
 			}
 		}
 
-		// Now we can range over it
+		// End of metrics for this beat
 		close(metricChan)
 	}()
 
-	// TODO context
-	for metric := range(metricChan) {
-		log.Debug().Str("name", metric.Name()).Interface("tags", metric.Tags()).Fields(metric.Fields()).Msg("metric")
-		metric.Accept()
+	beatMetrics := make([]*Metric, 0, len(metricChan))
+	for ctx.Err() == nil && metricChan != nil {
+		select {
+		case metric, ok := <-metricChan:
+			// End of queue
+			if !ok {
+				metricChan = nil
+				break
+			}
 
+			// Process metric
+			log.Debug().Str("name", metric.Name()).Interface("tags", metric.Tags()).Fields(metric.Fields()).Msg("metric")
+			beatMetric, derr := NewMetric(metric.Name(), metric.Tags(), metric.Fields())
+			if derr != nil {
+				return nil, derr
+			}
+
+			beatMetrics = append(beatMetrics, beatMetric)
+			metric.Accept()
+		case <-ctx.Done():
+			return nil, derrors.NewDeadlineExceededError("collecting metrics timed out", ctx.Err())
+		}
 	}
 
 	return &MetricsData{
-		// TBD
 		Timestamp: time.Now(),
+		Metrics: beatMetrics,
 	}, nil
 }
