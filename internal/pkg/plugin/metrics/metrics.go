@@ -15,7 +15,6 @@ import (
 	"github.com/nalej/service-net-agent/internal/pkg/plugin"
 
 	"github.com/influxdata/telegraf"
-	"github.com/influxdata/telegraf/agent"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -85,9 +84,7 @@ func (m *Metrics) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Err
 	// We can collect and process metrics in parallel
 	go func() {
 		for _, input := range(m.inputs) {
-			// TODO: Move to input.go
-			acc := agent.NewAccumulator(input, metricChan)
-			err := input.Gather(acc)
+			err := input.Gather(metricChan)
 			if err != nil {
 				close(metricChan)
 				log.Warn().Err(err).Str("input", input.Name()).Msg("error gathering input")

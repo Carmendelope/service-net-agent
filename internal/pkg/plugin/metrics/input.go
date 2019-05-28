@@ -12,10 +12,13 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/influxdata/telegraf"
+	"github.com/influxdata/telegraf/agent"
 	"github.com/influxdata/telegraf/filter"
 	"github.com/influxdata/telegraf/plugins/inputs"
+
 	_ "github.com/influxdata/telegraf/plugins/inputs/cpu"
 	_ "github.com/influxdata/telegraf/plugins/inputs/net"
+
 	"github.com/influxdata/toml"
 	"github.com/influxdata/toml/ast"
 )
@@ -123,10 +126,8 @@ func (i *RunningInput) MakeMetric(metric telegraf.Metric) telegraf.Metric {
 	return metric
 }
 
-func (i *RunningInput) Gather(acc telegraf.Accumulator) error {
-	// TODO:
-	// - capture internal timing
-	// - run in context?
+func (i *RunningInput) Gather(metricChan chan telegraf.Metric) error {
+	acc := agent.NewAccumulator(i, metricChan)
 	return i.Input.Gather(acc)
 }
 
