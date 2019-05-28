@@ -46,7 +46,31 @@ var Inputs = []InputConfig{
 		},
 	},
 	InputConfig{
+		Name: "disk",
+		Fields: []string{
+			"used",
+		},
+	},
+	InputConfig{
+		Name: "diskio",
+		Fields: []string{
+			"reads", "writes", "read_bytes", "write_bytes",
+		},
+	},
+	InputConfig{
+		Name: "mem",
+		Fields: []string{
+			"used",
+		},
+	},
+	InputConfig{
 		Name: "net",
+		Config: InputConfigMap{
+			"ignore_protocol_stats": true,
+		},
+		Fields: []string{
+			"bytes_recv", "bytes_sent", "packets_recv", "packets_sent",
+		},
 	},
 }
 
@@ -113,7 +137,9 @@ func (m *Metrics) Beat(ctx context.Context) (plugin.PluginHeartbeatData, derrors
 				return nil, derr
 			}
 
-			beatMetrics = append(beatMetrics, beatMetric)
+			if beatMetric != nil {
+				beatMetrics = append(beatMetrics, beatMetric)
+			}
 			metric.Accept()
 		case <-ctx.Done():
 			return nil, derrors.NewDeadlineExceededError("collecting metrics timed out", ctx.Err())

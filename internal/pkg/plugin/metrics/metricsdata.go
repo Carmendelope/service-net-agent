@@ -30,6 +30,11 @@ type Metric struct {
 }
 
 func NewMetric(name string, tags map[string]string, fields map[string]interface{}) (*Metric, derrors.Error) {
+	// Skip empty metrics
+	if len(fields) == 0 {
+		return nil, nil
+	}
+
 	metric := &Metric{
 		Name: name,
 		Tags: tags,
