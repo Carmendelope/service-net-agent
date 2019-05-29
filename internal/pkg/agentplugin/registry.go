@@ -15,17 +15,18 @@ import (
 	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 )
 
 type AgentRegistry struct {
 	*plugin.Registry
 }
 
+// This contains the exact same registered plugins as the general default
+// registry - we just add this to add some specific agent registry methods.
 var defaultRegistry = NewAgentRegistry()
 
 func NewAgentRegistry() *AgentRegistry {
-	r := &AgentRegistry{plugin.NewRegistry()}
+	r := &AgentRegistry{plugin.DefaultRegistry()}
 
 	return r
 }
@@ -44,7 +45,11 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 	for name, p := range(r.Running()) {
 		agentPlugin, ok := p.(AgentPlugin)
 		if !ok {
-			// Skip non-agent plugins in registry
+			// Skip non-agent plugins in registry, but still mark
+			// as processed
+			dataLock.Lock()
+			errMap[name] = nil
+			dataLock.Unlock()
 			continue
 		}
 		beatWaitGroup.Add(1)
@@ -112,29 +117,6 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 	}
 
 	return dataList, errMap
-}
-func Register(p *plugin.PluginDescriptor) derrors.Error {
-	return defaultRegistry.Register(p)
-}
-
-func ListPlugins() plugin.RegistryEntryMap {
-	return defaultRegistry.ListPlugins()
-}
-
-func StartPlugin(name plugin.PluginName, conf *viper.Viper) derrors.Error {
-	return defaultRegistry.StartPlugin(name, conf)
-}
-
-func StopPlugin(name plugin.PluginName) derrors.Error {
-	return defaultRegistry.StopPlugin(name)
-}
-
-func StopAll() {
-	defaultRegistry.StopAll()
-}
-
-func ExecuteCommand(ctx context.Context, name plugin.PluginName, cmd plugin.CommandName, params map[string]string) (string, derrors.Error) {
-	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
 }
 
 func CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[plugin.PluginName]derrors.Error) {

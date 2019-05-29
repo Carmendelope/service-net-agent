@@ -34,6 +34,12 @@ type Registry struct {
 	running RunningPluginMap
 }
 
+var defaultRegistry = NewRegistry()
+
+func DefaultRegistry() *Registry {
+	return defaultRegistry
+}
+
 func NewRegistry() *Registry {
 	r := &Registry{
 		available: AvailablePluginMap{},
@@ -53,6 +59,10 @@ func (r *Registry) Register(plugin *PluginDescriptor) derrors.Error {
 	return nil
 }
 
+func Register(p *PluginDescriptor) derrors.Error {
+	return defaultRegistry.Register(p)
+}
+
 func (r *Registry) Running() RunningPluginMap {
 	return r.running
 }
@@ -69,6 +79,10 @@ func (r *Registry) ListPlugins() RegistryEntryMap {
 	}
 
 	return entries
+}
+
+func ListPlugins() RegistryEntryMap {
+	return defaultRegistry.ListPlugins()
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
@@ -102,6 +116,10 @@ func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Erro
 	return nil
 }
 
+func StartPlugin(name PluginName, conf *viper.Viper) derrors.Error {
+	return defaultRegistry.StartPlugin(name, conf)
+}
+
 func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
 	log.Debug().Str("name", name.String()).Msg("stopping plugin")
 	plugin, found := r.running[name]
@@ -115,10 +133,18 @@ func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
 	return nil
 }
 
+func StopPlugin(name PluginName) derrors.Error {
+	return defaultRegistry.StopPlugin(name)
+}
+
 func (r *Registry) StopAll() {
 	for name, _ := range(r.running) {
 		r.StopPlugin(name)
 	}
+}
+
+func StopAll() {
+	defaultRegistry.StopAll()
 }
 
 func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
@@ -138,3 +164,8 @@ func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd Comm
 
 	return cmdFunc(ctx, params)
 }
+
+func ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
+	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
+}
+

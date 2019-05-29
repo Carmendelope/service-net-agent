@@ -76,7 +76,7 @@ var Inputs = []InputConfig{
 }
 
 func init() {
-	agentplugin.Register(&metricsDescriptor)
+	plugin.Register(&metricsDescriptor)
 }
 
 func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {

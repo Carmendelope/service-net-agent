@@ -14,7 +14,6 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
@@ -55,7 +54,7 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 		if !conf.GetBool("enabled") {
 			continue
 		}
-		derr := agentplugin.StartPlugin(plugin.PluginName(k), conf)
+		derr := plugin.StartPlugin(plugin.PluginName(k), conf)
 		if derr != nil {
 			return derr
 		}

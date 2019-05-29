@@ -12,7 +12,6 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/pkg/plugin"
 
@@ -53,18 +52,18 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 	switch cmd {
 	case plugin.StartCommand:
 		config := createPluginConfig(params)
-		derr = agentplugin.StartPlugin(name, config)
+		derr = plugin.StartPlugin(name, config)
 		if derr == nil {
 			w.writePluginConfig(name, config)
 		}
 	case plugin.StopCommand:
-		derr = agentplugin.StopPlugin(name)
+		derr = plugin.StopPlugin(name)
 		if derr == nil {
 			// Remove from config file
 			w.writePluginConfig(name, nil)
 		}
 	default:
-		result, derr = agentplugin.ExecuteCommand(ctx, name, cmd, params)
+		result, derr = plugin.ExecuteCommand(ctx, name, cmd, params)
 	}
 
 	return result, derr
