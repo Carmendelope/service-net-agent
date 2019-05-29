@@ -3,7 +3,7 @@ Service Net Agent
 
 ## Plugin infrastructure
 
-Agent plugins are defined in `internal/pkg/plugin`, in a subdirectory per plugin. A plugin can be instantiated, started and stopped. Furthermore, each plugin has a set of commands with parameters that it can execute.
+Agent plugins are defined in `internal/pkg/agentplugin`, in a subdirectory per plugin. The architecture is mostly generic (in `pkg/plugin`), with the only Agent-specific addition being the heartbeat data collection. A plugin can be instantiated, started and stopped. Furthermore, each plugin has a set of commands with parameters that it can execute.
 
 A plugin should register itself with the (default) plugin registry in its `init()` function by calling `plugin.Register(plugin *PluginDescriptor)`. `PluginDescriptor` contains all plugin information: name, description, constructor function and list of commands. The constructor function will return an instance of the specific plugin - which is an implementation of the `Plugin` interface:
 
@@ -16,10 +16,6 @@ type Plugin interface {
         // Retrieve the plugin descriptor
         GetPluginDescriptor() *PluginDescriptor
 
-        // Callback for plugin to add data to heartbeat. Returns nil if
-        // nothing needs to be added
-        Beat(ctx context.Context) (PluginHeartbeatData, derrors.Error)
-
         // Retrieve the function for a specific command to be executed in the
         // caller. Alternative would be an ExecuteCommand() function on
         // the plugin, but that would duplicate implementation for each plugin
@@ -28,11 +24,23 @@ type Plugin interface {
 }
 ```
 
+Agent plugins are based on generic plugins, with one addition:
+
+```Golang
+type AgentPlugin interface {
+	plugin.Plugin
+
+        // Callback for plugin to add data to heartbeat. Returns nil if
+        // nothing needs to be added
+        Beat(ctx context.Context) (PluginHeartbeatData, derrors.Error)
+}
+```
+
 Internally, the plugin has a mapping from command names (`type CommandName string`) to command execution functions (`type CommandFunc func(params map[string]string) (string, derrors.Error)`), which could be static or dynamic. The `GetCommand` function returns the appropriate execution function for a command.
 
-Each heartbeat, the main loop calls the `Beat()` method of each running plugin to return some plugin-specific data. If a plugin has no data to return, it should return `(nil, nil)`. If it is designed to return data as part of the heartbeat message, it should have an entry in the `edge-controller.Plugin` enum in the gRPC API and a specific data entity which is mentioned in the `OneOf` in `edge-controller.PluginData.data`. `Beat()` returns a `PluginHeartbeatData` interface, which has a method `ToGRPC()` that should populate the plugin-specific gRPC API fields. A companion-plugin on the Edge Controller that deals with the data is also needed.
+Each heartbeat, the main loop calls the `Beat()` method of each running agent plugin to return some plugin-specific data. If a plugin has no data to return, it should return `(nil, nil)` or not implement `Beat()` at all (in which case it'll be a `Plugin`, not an `AgentPlugin`). If it is designed to return data as part of the heartbeat message, it should have an entry in the `edge-controller.Plugin` enum in the gRPC API and a specific data entity which is mentioned in the `OneOf` in `edge-controller.PluginData.data`. `Beat()` returns a `PluginHeartbeatData` interface, which has a method `ToGRPC()` that should populate the plugin-specific gRPC API fields. A companion-plugin on the Edge Controller that deals with the data is also needed.
 
-An example plugin is provided in `internal/pkg/plugin/ping`.
+An example plugin is provided in `pkg/plugin/ping`.
 
 **NOTE:** Make sure your plugin is enabled by importing it in `internal/app/run/plugins.go`.
 
