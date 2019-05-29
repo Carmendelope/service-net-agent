@@ -23,10 +23,10 @@ type AgentRegistry struct {
 
 // This contains the exact same registered plugins as the general default
 // registry - we just add this to add some specific agent registry methods.
-var defaultRegistry = NewAgentRegistry()
+var defaultRegistry = NewAgentRegistry(plugin.DefaultRegistry())
 
-func NewAgentRegistry() *AgentRegistry {
-	r := &AgentRegistry{plugin.DefaultRegistry()}
+func NewAgentRegistry(parent *plugin.Registry) *AgentRegistry {
+	r := &AgentRegistry{parent}
 
 	return r
 }
