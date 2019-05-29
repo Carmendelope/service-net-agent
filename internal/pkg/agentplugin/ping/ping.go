@@ -14,7 +14,8 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/spf13/viper"
 )
@@ -30,7 +31,7 @@ var pingDescriptor = plugin.PluginDescriptor{
 }
 
 type Ping struct {
-	plugin.BasePlugin
+	agentplugin.BaseAgentPlugin
 	config *viper.Viper
 
 	commandMap plugin.CommandFuncMap
@@ -55,7 +56,7 @@ func init() {
 
 	pingDescriptor.AddCommand(pingCommand)
 
-	plugin.Register(&pingDescriptor)
+	agentplugin.Register(&pingDescriptor)
 }
 
 func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
@@ -80,7 +81,7 @@ func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
 	return &pingDescriptor
 }
 
-func (p *Ping) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
+func (p *Ping) Beat(context.Context) (agentplugin.PluginHeartbeatData, derrors.Error) {
 	wait := p.config.GetDuration("beatsleep")
 	if wait > 0 {
 		time.Sleep(wait)

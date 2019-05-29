@@ -11,8 +11,6 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-edge-controller-go"
-
 	"github.com/spf13/viper"
 )
 
@@ -104,27 +102,9 @@ type Plugin interface {
 	// Retrieve the plugin descriptor
 	GetPluginDescriptor() *PluginDescriptor
 
-	// Callback for plugin to add data to heartbeat. Returns nil if
-	// nothing needs to be added
-	Beat(ctx context.Context) (PluginHeartbeatData, derrors.Error)
-
 	// Retrieve the function for a specific command to be executed in the
 	// caller. Alternative would be an ExecuteCommand() function on
 	// the plugin, but that would duplicate implementation for each plugin
 	// that we can now implement in the registry.
 	GetCommandFunc(cmd CommandName) CommandFunc
-}
-
-type PluginHeartbeatData interface {
-	ToGRPC() *grpc_edge_controller_go.PluginData
-}
-
-type PluginHeartbeatDataList []PluginHeartbeatData
-func (d PluginHeartbeatDataList) ToGRPC() []*grpc_edge_controller_go.PluginData {
-	out := make ([]*grpc_edge_controller_go.PluginData, 0, len(d))
-	for _, data := range(d) {
-		out = append(out, data.ToGRPC())
-	}
-
-	return out
 }

@@ -10,8 +10,9 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
-	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/ping"
+	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
+	_ "github.com/nalej/service-net-agent/internal/pkg/agentplugin/ping"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

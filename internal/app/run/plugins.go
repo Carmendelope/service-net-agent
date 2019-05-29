@@ -7,16 +7,16 @@ package run
 // Available plugins
 
 import (
-	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/metrics"
-	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/ping"
+	_ "github.com/nalej/service-net-agent/internal/pkg/agentplugin/metrics"
+	_ "github.com/nalej/service-net-agent/internal/pkg/agentplugin/ping"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/rs/zerolog/log"
 )
 
 func printRegisteredPlugins() {
-	for name, entry := range(plugin.ListPlugins()) {
+	for name, entry := range(agentplugin.ListPlugins()) {
 		log.Info().Str("name", name.String()).Str("description", entry.Description).Bool("running", entry.Running).Msg("plugin loaded")
 	}
 }

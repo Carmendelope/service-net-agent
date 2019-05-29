@@ -323,12 +323,12 @@
   version = "v0.0.9"
 
 [[projects]]
-  digest = "1:933e4bc7861918867dc10f8067b8d58162d601e452638c87ee67a62fbda3c898"
+  digest = "1:d2f31f5ae3324b286a5a4479cd8d5d8053fec697a9624c4fe2239e30527eda40"
   name = "github.com/nalej/grpc-edge-controller-go"
   packages = ["."]
   pruneopts = ""
-  revision = "a68b7abfd5a6379c371c094986d58cbd6d024400"
-  version = "v0.0.10"
+  revision = "17adda8f215ec78788b07a1ed9e7e98c3b64d04d"
+  version = "v0.0.11"
 
 [[projects]]
   digest = "1:b0af951e7300f9929bc91b6b86660b81fe84046fa46a7ffa1bfde3f4f067abf2"

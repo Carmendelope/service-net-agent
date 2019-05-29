@@ -12,8 +12,9 @@ import (
 
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -52,18 +53,18 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 	switch cmd {
 	case plugin.StartCommand:
 		config := createPluginConfig(params)
-		derr = plugin.StartPlugin(name, config)
+		derr = agentplugin.StartPlugin(name, config)
 		if derr == nil {
 			w.writePluginConfig(name, config)
 		}
 	case plugin.StopCommand:
-		derr = plugin.StopPlugin(name)
+		derr = agentplugin.StopPlugin(name)
 		if derr == nil {
 			// Remove from config file
 			w.writePluginConfig(name, nil)
 		}
 	default:
-		result, derr = plugin.ExecuteCommand(ctx, name, cmd, params)
+		result, derr = agentplugin.ExecuteCommand(ctx, name, cmd, params)
 	}
 
 	return result, derr

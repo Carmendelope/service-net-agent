@@ -8,7 +8,6 @@ package plugin
 
 import (
 	"context"
-	"sync"
 
 	"github.com/nalej/derrors"
 
@@ -35,8 +34,6 @@ type Registry struct {
 	running RunningPluginMap
 }
 
-var defaultRegistry = NewRegistry()
-
 func NewRegistry() *Registry {
 	r := &Registry{
 		available: AvailablePluginMap{},
@@ -56,8 +53,8 @@ func (r *Registry) Register(plugin *PluginDescriptor) derrors.Error {
 	return nil
 }
 
-func Register(plugin *PluginDescriptor) derrors.Error {
-	return defaultRegistry.Register(plugin)
+func (r *Registry) Running() RunningPluginMap {
+	return r.running
 }
 
 func (r *Registry) ListPlugins() RegistryEntryMap {
@@ -72,10 +69,6 @@ func (r *Registry) ListPlugins() RegistryEntryMap {
 	}
 
 	return entries
-}
-
-func ListPlugins() RegistryEntryMap {
-	return defaultRegistry.ListPlugins()
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
@@ -109,10 +102,6 @@ func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Erro
 	return nil
 }
 
-func StartPlugin(name PluginName, conf *viper.Viper) derrors.Error {
-	return defaultRegistry.StartPlugin(name, conf)
-}
-
 func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
 	log.Debug().Str("name", name.String()).Msg("stopping plugin")
 	plugin, found := r.running[name]
@@ -126,18 +115,10 @@ func (r *Registry) StopPlugin(name PluginName) (derrors.Error) {
 	return nil
 }
 
-func StopPlugin(name PluginName) derrors.Error {
-	return defaultRegistry.StopPlugin(name)
-}
-
 func (r *Registry) StopAll() {
 	for name, _ := range(r.running) {
 		r.StopPlugin(name)
 	}
-}
-
-func StopAll() {
-	defaultRegistry.StopAll()
 }
 
 func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
@@ -156,91 +137,4 @@ func (r *Registry) ExecuteCommand(ctx context.Context, name PluginName, cmd Comm
 	}
 
 	return cmdFunc(ctx, params)
-}
-
-func ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, params map[string]string) (string, derrors.Error) {
-	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
-}
-
-func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
-	dataList := []PluginHeartbeatData{}
-	errMap := make(map[PluginName]derrors.Error, len(r.running))
-	timedout := false
-	// Lock for collecting results
-	var dataLock sync.Mutex
-
-	// Wait for plugin Beats to execute in parallel
-	var beatWaitGroup sync.WaitGroup
-
-	// Collect data in parallel
-	for name, plugin := range(r.running) {
-		beatWaitGroup.Add(1)
-		// We need to copy the variables to something local to this
-		// loop - the range will modify them and the running routines
-		// will use the modified values otherwise
-		go func(name PluginName, plugin Plugin){
-			defer beatWaitGroup.Done()
-			data, err := plugin.Beat(ctx)
-
-			dataLock.Lock()
-			// Don't add more when we already timed out
-			if !timedout {
-				// Always set err so we know we've processed this plugin
-				errMap[name] = err
-				if data != nil && err == nil {
-					dataList = append(dataList, data)
-				}
-			}
-			dataLock.Unlock()
-		}(name, plugin)
-	}
-
-	// Interruptable wait
-	doneChan := make(chan struct{})
-	go func(){
-		beatWaitGroup.Wait()
-		close(doneChan)
-	}()
-
-	select {
-	case <-doneChan:
-		// All good - everybody is done and we have our results
-		break
-	case <-ctx.Done():
-		// Timeout - check which functions did time out and set errors
-		// accordingly
-
-		// Make sure the running goroutines don't add anything else
-		// while we're collecting results
-		log.Warn().Msg("Timeout collecting plugin heartbeat data")
-		dataLock.Lock()
-		timedout = true
-		dataLock.Unlock()
-
-	}
-
-	// Set errors for interrupted Beats
-	for name := range(r.running) {
-		err, found := errMap[name]
-		if !found {
-			if timedout {
-				// Processing timed out
-				log.Warn().Str("plugin", name.String()).Msg("Plugin timed out")
-				errMap[name] = derrors.NewDeadlineExceededError("plugin beat timed out").WithParams(name.String())
-			} else {
-				// Should have been found!
-				log.Warn().Str("plugin", name.String()).Msg("Plugin did not run while it should have")
-				errMap[name] = derrors.NewAbortedError("plugin beat did not run").WithParams(name.String())
-			}
-		} else if err == nil {
-			// Sanitize error map while we're at it
-			delete(errMap, name)
-		}
-	}
-
-	return dataList, errMap
-}
-
-func CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
-	return defaultRegistry.CollectHeartbeatData(ctx)
 }

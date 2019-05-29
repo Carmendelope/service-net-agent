@@ -12,7 +12,8 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/influxdata/telegraf"
 
@@ -27,7 +28,7 @@ var metricsDescriptor = plugin.PluginDescriptor{
 }
 
 type Metrics struct {
-	plugin.BasePlugin
+	agentplugin.BaseAgentPlugin
 
 	inputs []*RunningInput
 }
@@ -75,7 +76,7 @@ var Inputs = []InputConfig{
 }
 
 func init() {
-	plugin.Register(&metricsDescriptor)
+	agentplugin.Register(&metricsDescriptor)
 }
 
 func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {
@@ -102,7 +103,7 @@ func (m *Metrics) GetPluginDescriptor() (*plugin.PluginDescriptor) {
         return &metricsDescriptor
 }
 
-func (m *Metrics) Beat(ctx context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
+func (m *Metrics) Beat(ctx context.Context) (agentplugin.PluginHeartbeatData, derrors.Error) {
 	metricChan := make(chan telegraf.Metric, 100)
 
 	// We can collect and process metrics in parallel

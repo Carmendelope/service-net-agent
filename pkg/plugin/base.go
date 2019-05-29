@@ -7,8 +7,6 @@ package plugin
 // Base plugin that can be embedded in other plugins to adhere to the interface
 
 import (
-	"context"
-
 	"github.com/nalej/derrors"
 )
 
@@ -29,9 +27,4 @@ func (b *BasePlugin) StopPlugin() {
 // No commands
 func (b *BasePlugin) GetCommandFunc(CommandName) CommandFunc {
 	return nil
-}
-
-// No heartbeat data
-func (b *BasePlugin) Beat(context.Context) (PluginHeartbeatData, derrors.Error) {
-	return nil, nil
 }
