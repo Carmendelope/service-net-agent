@@ -85,6 +85,24 @@ func ListPlugins() RegistryEntryMap {
 	return defaultRegistry.ListPlugins()
 }
 
+func (r *Registry) GetPlugin(name PluginName) (Plugin, derrors.Error) {
+	plugin, found := r.running[name]
+	if !found {
+		_, found := r.available[name]
+		if !found {
+			return nil, derrors.NewInvalidArgumentError("plugin not available").WithParams(name)
+		}
+
+		return nil, derrors.NewInvalidArgumentError("plugin not running").WithParams(name)
+	}
+
+	return plugin, nil
+}
+
+func GetPlugin(name PluginName) (Plugin, derrors.Error) {
+	return defaultRegistry.GetPlugin(name)
+}
+
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
 	// Easier to handle nil configuration here
 	if conf == nil {
