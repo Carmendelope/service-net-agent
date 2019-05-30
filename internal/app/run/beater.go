@@ -15,7 +15,7 @@ import (
 	"github.com/nalej/grpc-edge-controller-go"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/rs/zerolog/log"
 )
@@ -32,7 +32,7 @@ func (b *Beater) Beat(timeout time.Duration) (bool, derrors.Error) {
 	var beatSent = false
 
 	beatCtx, _ := context.WithTimeout(context.Background(), timeout)
-	beatData, beatErrs := plugin.CollectHeartbeatData(beatCtx)
+	beatData, beatErrs := agentplugin.CollectHeartbeatData(beatCtx)
 
 	// Warn about errors
 	// TODO: Decide if we're not alive anymore due to errors

@@ -1,3 +1,6 @@
+# gopsutil on Windows needs this
+required = ["github.com/shirou/w32"]
+
 [[constraint]]
   name = "github.com/onsi/ginkgo"
   version = "v1.7.0"
@@ -28,15 +31,15 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-edge-controller-go"
-  version = "v0.0.6"
-
-[[constraint]]
-  name = "github.com/nalej/grpc-inventory-manager-go"
   version = "v0.0.11"
 
 [[constraint]]
+  name = "github.com/nalej/grpc-inventory-manager-go"
+  version = "v0.0.20"
+
+[[constraint]]
   name = "github.com/nalej/grpc-inventory-go"
-  version = "v0.0.4"
+  version = "v0.0.10"
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
@@ -57,3 +60,12 @@
 [[constraint]]
   name = "github.com/denisbrodbeck/machineid"
   version = "v1.0.1"
+
+[[constraint]]
+  name = "github.com/influxdata/telegraf"
+  version = "1.10.4"
+
+[[constraint]]
+  name = "github.com/influxdata/toml"
+  branch = "master"
+

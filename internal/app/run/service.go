@@ -14,12 +14,10 @@ import (
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )
-
-const pluginConfigKey = "plugins"
 
 type Service struct {
 	Config *config.Config
@@ -48,9 +46,9 @@ func (s *Service) Validate() (derrors.Error) {
 
 // Restart previously running plugins
 func (s *Service) RestartPlugins() (derrors.Error) {
-	plugins := s.Config.GetStringMap(pluginConfigKey)
+	plugins := s.Config.GetStringMap(plugin.DefaultPluginPrefix)
 	for k, _ := range(plugins) {
-		conf := s.Config.Sub(fmt.Sprintf("%s.%s", pluginConfigKey, k))
+		conf := s.Config.Sub(fmt.Sprintf("%s.%s", plugin.DefaultPluginPrefix, k))
 		if !conf.GetBool("enabled") {
 			continue
 		}
@@ -83,7 +81,7 @@ func (s *Service) Run() (derrors.Error) {
 	log.Debug().Str("interval", interval.String()).Msg("running")
 
 	// Create worker to execute operations
-	worker := NewWorker(s.Config.GetSubConfig(pluginConfigKey))
+	worker := NewWorker(s.Config.GetSubConfig(plugin.DefaultPluginPrefix))
 
 	// Create dispatcher for operations to workers
 	dispatcher, derr := NewDispatcher(s.Client, worker, s.Config.GetInt("agent.opqueue_len"))

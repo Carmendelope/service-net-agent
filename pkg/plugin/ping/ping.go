@@ -14,7 +14,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/spf13/viper"
 )
@@ -30,6 +30,7 @@ var pingDescriptor = plugin.PluginDescriptor{
 }
 
 type Ping struct {
+	plugin.BasePlugin
 	config *viper.Viper
 
 	commandMap plugin.CommandFuncMap
@@ -71,27 +72,12 @@ func NewPing(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 	return p, nil
 }
 
-func (p *Ping) StartPlugin() (derrors.Error) {
-	return nil
-}
-
-func (p *Ping) StopPlugin() {
-}
-
 func (p *Ping) GetCommandFunc(cmd plugin.CommandName) plugin.CommandFunc {
 	return p.commandMap[cmd]
 }
 
 func (p *Ping) GetPluginDescriptor() *plugin.PluginDescriptor {
 	return &pingDescriptor
-}
-
-func (p *Ping) Beat(context.Context) (plugin.PluginHeartbeatData, derrors.Error) {
-	wait := p.config.GetDuration("beatsleep")
-	if wait > 0 {
-		time.Sleep(wait)
-	}
-	return &PingData{}, nil
 }
 
 func (p *Ping) ping(ctx context.Context, params map[string]string) (string, derrors.Error) {

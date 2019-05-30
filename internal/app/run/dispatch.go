@@ -16,7 +16,7 @@ import (
 	"github.com/nalej/grpc-inventory-manager-go"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )
