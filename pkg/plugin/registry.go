@@ -8,10 +8,12 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/nalej/derrors"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -83,6 +85,24 @@ func (r *Registry) ListPlugins() RegistryEntryMap {
 
 func ListPlugins() RegistryEntryMap {
 	return defaultRegistry.ListPlugins()
+}
+
+func (r *Registry) SetCommandFlags(cmd *cobra.Command, config *viper.Viper, prefix string) {
+	for name, desc := range(r.available) {
+		flagPrefix := name.String()
+		if prefix != "" {
+			flagPrefix = fmt.Sprintf("%s.%s", prefix, flagPrefix)
+		}
+		for _, flag := range(desc.Flags) {
+			flagName := fmt.Sprintf("%s.%s", flagPrefix, flag.Name)
+			cmd.Flags().String(flagName, flag.Default, flag.Description)
+			config.BindPFlag(flagName, cmd.Flags().Lookup(flagName))
+		}
+	}
+}
+
+func SetCommandFlags(cmd *cobra.Command, config *viper.Viper, prefix string) {
+	defaultRegistry.SetCommandFlags(cmd, config, prefix)
 }
 
 func (r *Registry) GetPlugin(name PluginName) (Plugin, derrors.Error) {
