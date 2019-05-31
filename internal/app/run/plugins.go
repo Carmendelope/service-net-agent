@@ -7,9 +7,10 @@ package run
 // Available plugins
 
 import (
-	_ "github.com/nalej/service-net-agent/internal/pkg/plugin/ping"
+	_ "github.com/nalej/service-net-agent/internal/pkg/agentplugin/metrics"
+	_ "github.com/nalej/service-net-agent/pkg/plugin/ping"
 
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 )

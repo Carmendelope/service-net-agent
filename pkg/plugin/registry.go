@@ -8,11 +8,12 @@ package plugin
 
 import (
 	"context"
-	"sync"
+	"fmt"
 
 	"github.com/nalej/derrors"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -37,6 +38,10 @@ type Registry struct {
 
 var defaultRegistry = NewRegistry()
 
+func DefaultRegistry() *Registry {
+	return defaultRegistry
+}
+
 func NewRegistry() *Registry {
 	r := &Registry{
 		available: AvailablePluginMap{},
@@ -56,8 +61,12 @@ func (r *Registry) Register(plugin *PluginDescriptor) derrors.Error {
 	return nil
 }
 
-func Register(plugin *PluginDescriptor) derrors.Error {
-	return defaultRegistry.Register(plugin)
+func Register(p *PluginDescriptor) derrors.Error {
+	return defaultRegistry.Register(p)
+}
+
+func (r *Registry) Running() RunningPluginMap {
+	return r.running
 }
 
 func (r *Registry) ListPlugins() RegistryEntryMap {
@@ -76,6 +85,42 @@ func (r *Registry) ListPlugins() RegistryEntryMap {
 
 func ListPlugins() RegistryEntryMap {
 	return defaultRegistry.ListPlugins()
+}
+
+func (r *Registry) SetCommandFlags(cmd *cobra.Command, config *viper.Viper, prefix string) {
+	for name, desc := range(r.available) {
+		flagPrefix := name.String()
+		if prefix != "" {
+			flagPrefix = fmt.Sprintf("%s.%s", prefix, flagPrefix)
+		}
+		for _, flag := range(desc.Flags) {
+			flagName := fmt.Sprintf("%s.%s", flagPrefix, flag.Name)
+			cmd.Flags().String(flagName, flag.Default, flag.Description)
+			config.BindPFlag(flagName, cmd.Flags().Lookup(flagName))
+		}
+	}
+}
+
+func SetCommandFlags(cmd *cobra.Command, config *viper.Viper, prefix string) {
+	defaultRegistry.SetCommandFlags(cmd, config, prefix)
+}
+
+func (r *Registry) GetPlugin(name PluginName) (Plugin, derrors.Error) {
+	plugin, found := r.running[name]
+	if !found {
+		_, found := r.available[name]
+		if !found {
+			return nil, derrors.NewInvalidArgumentError("plugin not available").WithParams(name)
+		}
+
+		return nil, derrors.NewInvalidArgumentError("plugin not running").WithParams(name)
+	}
+
+	return plugin, nil
+}
+
+func GetPlugin(name PluginName) (Plugin, derrors.Error) {
+	return defaultRegistry.GetPlugin(name)
 }
 
 func (r *Registry) StartPlugin(name PluginName, conf *viper.Viper) (derrors.Error) {
@@ -162,79 +207,3 @@ func ExecuteCommand(ctx context.Context, name PluginName, cmd CommandName, param
 	return defaultRegistry.ExecuteCommand(ctx, name,cmd, params)
 }
 
-func (r *Registry) CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
-	dataList := []PluginHeartbeatData{}
-	errMap := make(map[PluginName]derrors.Error, len(r.running))
-	timedout := false
-	// Lock for collecting results
-	var dataLock sync.Mutex
-
-	// Wait for plugin Beats to execute in parallel
-	var beatWaitGroup sync.WaitGroup
-
-	// Collect data in parallel
-	for name, plugin := range(r.running) {
-		beatWaitGroup.Add(1)
-		go func(){
-			defer beatWaitGroup.Done()
-			data, err := plugin.Beat(ctx)
-
-			dataLock.Lock()
-			// Don't add more when we already timed out
-			if !timedout {
-				// Always set err so we know we've processed this plugin
-				errMap[name] = err
-				if data != nil && err == nil {
-					dataList = append(dataList, data)
-				}
-			}
-			dataLock.Unlock()
-		}()
-	}
-
-	// Interruptable wait
-	doneChan := make(chan struct{})
-	go func(){
-		beatWaitGroup.Wait()
-		close(doneChan)
-	}()
-
-	select {
-	case <-doneChan:
-		// All good - everybody is done and we have our results
-		break
-	case <-ctx.Done():
-		// Timeout - check which functions did time out and set errors
-		// accordingly
-
-		// Make sure the running goroutines don't add anything else
-		// while we're collecting results
-		dataLock.Lock()
-		timedout = true
-		dataLock.Unlock()
-
-	}
-
-	// Set errors for interrupted Beats
-	for name := range(r.running) {
-		err, found := errMap[name]
-		if !found {
-			if timedout {
-				// Processing timed out
-				errMap[name] = derrors.NewDeadlineExceededError("plugin beat timed out").WithParams(name.String())
-			} else {
-				// Should have been found!
-				errMap[name] = derrors.NewAbortedError("plugin beat did not run").WithParams(name.String())
-			}
-		} else if err == nil {
-			// Sanitize error map while we're at it
-			delete(errMap, name)
-		}
-	}
-
-	return dataList, errMap
-}
-
-func CollectHeartbeatData(ctx context.Context) (PluginHeartbeatDataList, map[PluginName]derrors.Error) {
-	return defaultRegistry.CollectHeartbeatData(ctx)
-}

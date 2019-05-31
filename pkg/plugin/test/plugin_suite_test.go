@@ -18,5 +18,5 @@ import (
 
 func TestHandlerPackage(t *testing.T) {
 	gomega.RegisterFailHandler(ginkgo.Fail)
-	ginkgo.RunSpecs(t, "internal/pkg/plugin package suite")
+	ginkgo.RunSpecs(t, "pkg/plugin package suite")
 }

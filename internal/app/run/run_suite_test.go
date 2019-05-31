@@ -16,7 +16,7 @@ import (
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/ec-stub"
-	"github.com/nalej/service-net-agent/internal/pkg/plugin"
+	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

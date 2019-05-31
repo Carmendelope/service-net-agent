@@ -11,10 +11,10 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-edge-controller-go"
-
 	"github.com/spf13/viper"
 )
+
+const DefaultPluginPrefix = "plugins"
 
 // Type used to describe plugins and how to instantiate them
 type PluginDescriptor struct {
@@ -26,6 +26,10 @@ type PluginDescriptor struct {
 
 	// All commands supported by the plugin
 	Commands CommandMap
+
+	// All flags support by the plugin; can be used to properly
+	// parse command line to initialize the plugin
+	Flags []FlagDescriptor
 }
 
 func (d *PluginDescriptor) AddCommand(command CommandDescriptor) {
@@ -34,6 +38,14 @@ func (d *PluginDescriptor) AddCommand(command CommandDescriptor) {
 	}
 
 	d.Commands[command.Name] = command
+}
+
+func (d *PluginDescriptor) AddFlag(flag FlagDescriptor) {
+	if d.Flags== nil {
+		d.Flags = []FlagDescriptor{}
+	}
+
+	d.Flags = append(d.Flags, flag)
 }
 
 // Type for indexing plugins by name
@@ -91,6 +103,13 @@ type ParamDescriptor struct {
 
 type ParamMap map[ParamName]ParamDescriptor
 
+// Type to describe plugin flags
+type FlagDescriptor struct {
+	Name string
+	Default string
+	Description string
+}
+
 // Default commands handled outside of the plugin
 const (
 	StartCommand CommandName = "start"
@@ -104,27 +123,9 @@ type Plugin interface {
 	// Retrieve the plugin descriptor
 	GetPluginDescriptor() *PluginDescriptor
 
-	// Callback for plugin to add data to heartbeat. Returns nil if
-	// nothing needs to be added
-	Beat(ctx context.Context) (PluginHeartbeatData, derrors.Error)
-
 	// Retrieve the function for a specific command to be executed in the
 	// caller. Alternative would be an ExecuteCommand() function on
 	// the plugin, but that would duplicate implementation for each plugin
 	// that we can now implement in the registry.
 	GetCommandFunc(cmd CommandName) CommandFunc
-}
-
-type PluginHeartbeatData interface {
-	ToGRPC() *grpc_edge_controller_go.PluginData
-}
-
-type PluginHeartbeatDataList []PluginHeartbeatData
-func (d PluginHeartbeatDataList) ToGRPC() []*grpc_edge_controller_go.PluginData {
-	out := make ([]*grpc_edge_controller_go.PluginData, 0, len(d))
-	for _, data := range(d) {
-		out = append(out, data.ToGRPC())
-	}
-
-	return out
 }
