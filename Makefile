@@ -5,3 +5,6 @@ include scripts/Makefile.golang
 
 docker-build:
 	@echo "This component has no docker images"
+
+yaml:
+	@echo "This component has no K8S resources"

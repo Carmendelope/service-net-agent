@@ -42,6 +42,9 @@ type AgentClient struct {
 
 func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derrors.Error) {
 	log.Debug().Str("address", address).Msg("creating connection")
+
+	log.Info().Interface("opts", opts).Msg("Borrar OPTS!!!")
+
 	agentClient := &AgentClient{
 		address: address,
 		opts: opts,
@@ -100,7 +103,6 @@ func (c *AgentClient) getDialOptions() ([]grpc.DialOption, derrors.Error) {
 		// the system certificates to validate servers, in a
 		// cross-platform way.
 		var pool *x509.CertPool = nil
-		var err error
 		if c.opts.CACert != "" {
 			pool = x509.NewCertPool()
 			derr := addCert(pool, c.opts.CACert)
@@ -112,20 +114,15 @@ func (c *AgentClient) getDialOptions() ([]grpc.DialOption, derrors.Error) {
 		if c.opts.Insecure {
 			log.Warn().Msg("creating insecure connection")
 		}
-
-		host, _, err := net.SplitHostPort(c.address)
-		if err != nil {
-			return nil, derrors.NewInternalError("unable to determine host and port from address", err).WithParams(c.address)
-		}
-
 		tlsConfig := &tls.Config{
 			RootCAs: pool,
-			ServerName: host,
+			ServerName: "",
 			InsecureSkipVerify: c.opts.Insecure,
 		}
 
 		creds := credentials.NewTLS(tlsConfig)
 		log.Debug().Interface("creds", creds.Info()).Msg("secure credentials")
+
 		options = append(options, grpc.WithTransportCredentials(creds))
 	} else {
 		log.Warn().Msg("creating unencrypted connection")
