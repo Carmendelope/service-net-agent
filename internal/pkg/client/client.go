@@ -43,8 +43,6 @@ type AgentClient struct {
 func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derrors.Error) {
 	log.Debug().Str("address", address).Msg("creating connection")
 
-	log.Info().Interface("opts", opts).Msg("Borrar OPTS!!!")
-
 	agentClient := &AgentClient{
 		address: address,
 		opts: opts,
