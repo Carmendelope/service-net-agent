@@ -8,6 +8,7 @@ package join
 
 import (
 	"fmt"
+	"github.com/nalej/grpc-utils/pkg/conversions"
 
 	"github.com/nalej/derrors"
 
@@ -48,7 +49,6 @@ func (j *Joiner) Run() (derrors.Error) {
 	if derr != nil {
 		return derr
 	}
-
 	// Create connection
 	client, derr := client.FromConfig(j.Config, j.Token)
 	if derr != nil {
@@ -59,6 +59,7 @@ func (j *Joiner) Run() (derrors.Error) {
 	// Send request and get agent token
 	response, err := client.AgentJoin(client.GetContext(), request)
 	if err != nil {
+		log.Warn().Str("trace", conversions.ToDerror(err).DebugReport()).Msg("unable to join")
 		return derrors.NewUnavailableError("unable to send join request", err)
 	}
 

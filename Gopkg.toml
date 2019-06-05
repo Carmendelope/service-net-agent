@@ -35,11 +35,12 @@ required = ["github.com/shirou/w32"]
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-manager-go"
-  version = "v0.0.20"
+  version = "v0.0.23"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-go"
-  version = "v0.0.10"
+  version = "v0.0.11"
+
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
@@ -61,6 +62,10 @@ required = ["github.com/shirou/w32"]
   name = "github.com/denisbrodbeck/machineid"
   version = "v1.0.1"
 
+ [[constraint]]
+      name="github.com/nalej/grpc-authx-go"
+      version="v0.0.49"
+
 [[constraint]]
   name = "github.com/influxdata/telegraf"
   version = "1.10.4"
@@ -68,4 +73,5 @@ required = ["github.com/shirou/w32"]
 [[constraint]]
   name = "github.com/influxdata/toml"
   branch = "master"
+
 
