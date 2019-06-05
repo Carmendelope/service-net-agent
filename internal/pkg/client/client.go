@@ -112,9 +112,10 @@ func (c *AgentClient) getDialOptions() ([]grpc.DialOption, derrors.Error) {
 		if c.opts.Insecure {
 			log.Warn().Msg("creating insecure connection")
 		}
+
 		tlsConfig := &tls.Config{
 			RootCAs: pool,
-			ServerName: "",
+			ServerName: "", // we don't need to check the serverName
 			InsecureSkipVerify: c.opts.Insecure,
 		}
 
