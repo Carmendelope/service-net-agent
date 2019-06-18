@@ -1,5 +1,3 @@
-include scripts/Makefile.common
-include scripts/Makefile.golang
 
 .DEFAULT_GOAL := all
 
@@ -8,3 +6,6 @@ docker-build:
 
 yaml:
 	@echo "This component has no K8S resources"
+
+include scripts/Makefile.golang
+include scripts/Makefile.common
