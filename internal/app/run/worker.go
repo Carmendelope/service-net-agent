@@ -11,9 +11,9 @@ import (
 	"fmt"
 
 	"github.com/nalej/derrors"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"

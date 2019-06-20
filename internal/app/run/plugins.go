@@ -8,9 +8,9 @@ package run
 
 import (
 	_ "github.com/nalej/service-net-agent/internal/pkg/agentplugin/metrics"
-	_ "github.com/nalej/service-net-agent/pkg/plugin/ping"
+	_ "github.com/nalej/infra-net-plugin/ping"
 
-	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/rs/zerolog/log"
 )

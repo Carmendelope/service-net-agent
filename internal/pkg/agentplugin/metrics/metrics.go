@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/nalej/derrors"
+	"github.com/nalej/infra-net-plugin"
 
-	"github.com/nalej/service-net-agent/pkg/plugin"
 	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/influxdata/telegraf"
@@ -100,7 +100,7 @@ func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 }
 
 func (m *Metrics) GetPluginDescriptor() (*plugin.PluginDescriptor) {
-        return &metricsDescriptor
+	return &metricsDescriptor
 }
 
 func (m *Metrics) Beat(ctx context.Context) (agentplugin.PluginHeartbeatData, derrors.Error) {

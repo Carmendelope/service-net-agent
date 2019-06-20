@@ -10,8 +10,7 @@ import (
 	"context"
 
 	"github.com/nalej/derrors"
-
-	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/infra-net-plugin"
 )
 
 type BaseAgentPlugin struct {

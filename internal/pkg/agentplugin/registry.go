@@ -11,8 +11,7 @@ import (
 	"sync"
 
 	"github.com/nalej/derrors"
-
-	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/rs/zerolog/log"
 )
