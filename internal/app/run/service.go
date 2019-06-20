@@ -17,6 +17,7 @@ import (
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type Service struct {
@@ -61,6 +62,20 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 	return nil
 }
 
+func (s *Service) StartCorePlugin() (derrors.Error) {
+	// We pass ourselves in the config, so that the core plugin can
+	// control the service
+	conf := viper.New()
+	conf.Set("runner", s)
+
+	derr := plugin.StartPlugin("core", conf)
+	if derr != nil {
+		return derr
+	}
+
+	return nil
+}
+
 func (s *Service) Run() (derrors.Error) {
 	if s.Client == nil {
 		return derrors.NewInvalidArgumentError("client not set")
@@ -69,7 +84,12 @@ func (s *Service) Run() (derrors.Error) {
 	printRegisteredPlugins()
 	s.Config.Print()
 
-	derr := s.RestartPlugins()
+	derr := s.StartCorePlugin()
+	if derr != nil {
+		return derr
+	}
+
+	derr = s.RestartPlugins()
 	if derr != nil {
 		return derr
 	}
