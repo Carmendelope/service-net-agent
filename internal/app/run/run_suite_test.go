@@ -12,11 +12,11 @@ import (
 
 	"github.com/nalej/grpc-edge-controller-go"
 	"github.com/nalej/grpc-utils/pkg/test"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
 	"github.com/nalej/service-net-agent/internal/pkg/ec-stub"
-	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
