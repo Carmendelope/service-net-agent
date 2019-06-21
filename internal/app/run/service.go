@@ -25,6 +25,7 @@ type Service struct {
 	Client *client.AgentClient
 
 	stopChan chan struct{}
+	disableChan chan struct{}
 	lastBeat time.Time
 }
 
@@ -127,7 +128,8 @@ func (s *Service) Run() (derrors.Error) {
 	}
 
 	s.stopChan = make(chan struct{})
-	for s.stopChan != nil {
+	s.disableChan = make(chan struct{})
+	for s.stopChan != nil && s.disableChan != nil {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
@@ -144,10 +146,17 @@ func (s *Service) Run() (derrors.Error) {
 			}
 		case <-s.stopChan:
 			s.stopChan = nil
+		case <-s.disableChan:
+			s.disableChan = nil
 		}
 	}
 
 	derr = dispatcher.Stop(s.Config.GetDuration("agent.shutdown_timeout"))
+
+	// Only disabled, still waiting for stop
+	if s.stopChan != nil {
+		<-s.stopChan
+	}
 
 	log.Debug().Msg("stopped")
 	return derr
@@ -185,5 +194,15 @@ func (s *Service) Alive() (bool, derrors.Error) {
 }
 
 func (s *Service) Disable() {
-	// TBD
+	// Recover to avoid race conditions stopping and uninstalling
+	// simultaneously, or running multiple uninstalls
+	defer func() {
+		if r := recover(); r != nil {
+			log.Debug().Msg("already disabled")
+		}
+	}()
+
+	log.Info().Msg("disabling agent heartbeat and operations")
+
+	close(s.disableChan)
 }
