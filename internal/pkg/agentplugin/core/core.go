@@ -9,6 +9,7 @@ package core
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/infra-net-plugin"
@@ -85,12 +86,22 @@ func (c *Core) GetCommandFunc(cmd plugin.CommandName) plugin.CommandFunc {
 }
 
 // Uninstall command will:
+// - Run actual uninstallation in a Go routine
+// - Return such that the Edge Controller gets confirmation of command
+// The actual uninstallation will:
 // - Disable sending of heartbeat and receiving/executing of commands
 // - Disable and remove the system service
 // - Delete the configuration file
 // - Stop and exit
 func (c *Core) uninstall(ctx context.Context, params map[string]string) (string, derrors.Error) {
 	log.Info().Msg("Received uninstall command. Stopping and disabling agent.")
+
+	go c.doUninstall(ctx)
+	return "Uninstall in progress", nil
+}
+
+func (c *Core) doUninstall(ctx context.Context) {
+	log.Debug().Msg("executing uninstall")
 
 	// First, make sure we don't send a heartbeat or accept any
 	// operation requests anymore
@@ -99,33 +110,36 @@ func (c *Core) uninstall(ctx context.Context, params map[string]string) (string,
 	// Disable and remove the system service
 	installer, derr := svcmgr.NewInstaller(defaults.AgentName, c.config.Path)
 	if derr != nil {
-		return "", derr
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Error().Err(derr).Msg("failed to create installer")
+		return
 	}
 
 	derr = installer.Disable()
 	if derr != nil {
-		return "", derr
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
 	}
 
 	derr = installer.Remove()
 	if derr != nil {
-		return "", derr
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
 	}
 
 	// Delete configuration
 	derr = c.config.DeleteConfigFile()
 	if derr != nil {
-		return "", derr
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
 	}
 
 	// Stop the running service
 	c.runner.Stop()
 
 	// We should be stopped now, but just in case, we just
-	// exit after timeout
-	<-ctx.Done()
+	// exit after timeout. The agent most likely already stops before this
+	// timeout
+	time.Sleep(time.Second * defaults.AgentShutdownTimeout)
 	os.Exit(0)
-
-	// Lol.
-	return "", derrors.NewInternalError("failed to stop")
 }
