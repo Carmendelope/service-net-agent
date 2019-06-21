@@ -32,3 +32,8 @@ func (i *Implementation) Run() derrors.Error {
 func checkSystem() derrors.Error {
 	return derrors.NewUnimplementedError("starting as service not supported").WithParams(build.Default.GOOS)
 }
+
+// Stop system service
+func Stop(servicename string) (derrors.Error) {
+	return derrors.NewUnimplementedError("stopping service not supported").WithParams(build.Default.GOOS)
+}

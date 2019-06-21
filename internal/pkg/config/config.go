@@ -119,6 +119,8 @@ func (c *Config) DeleteConfigFile() derrors.Error {
 	c.writeLock.Lock()
 	defer c.writeLock.Unlock()
 
+	log.Debug().Str("file", c.ConfigFile).Msg("removing config file")
+
 	// Just checking if our code doesn't do weird things
 	if c.parent != nil {
 		return derrors.NewInvalidArgumentError("can't delete config file for a sub-config")

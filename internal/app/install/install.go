@@ -29,6 +29,9 @@ const (
 	InstallCommand InstallCommandType = "install"
 	UninstallCommand InstallCommandType = "uninstall"
 )
+func (i InstallCommandType) String() string {
+	return string(i)
+}
 
 func (i *Installer) Validate() (derrors.Error) {
 	if i.Config.Path == "" {
@@ -112,5 +115,37 @@ func (i *Installer) Install() (derrors.Error) {
 // - Disable and remove the system service
 // - Delete the configuration file
 func (i *Installer) Uninstall() (derrors.Error) {
-	return derrors.NewUnimplementedError("uninstall not implemented")
+	svcInstaller, derr := svcmgr.NewInstaller(defaults.AgentName, i.Config.Path)
+	if derr != nil {
+		return derr
+	}
+
+	// Stop service
+	derr = svcmgr.Stop(defaults.AgentName)
+	if derr != nil {
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
+	}
+
+	// Disable and remove service
+	derr = svcInstaller.Disable()
+	if derr != nil {
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
+	}
+
+	derr = svcInstaller.Remove()
+	if derr != nil {
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
+	}
+
+	// Delete configuration
+	derr = i.Config.DeleteConfigFile()
+	if derr != nil {
+		log.Debug().Str("trace", derr.DebugReport()).Msg("debug report")
+		log.Warn().Err(derr).Msg("continuing")
+	}
+
+	return nil
 }
