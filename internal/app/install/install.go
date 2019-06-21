@@ -1,5 +1,3 @@
-// +build linux windows
-
 /*
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
@@ -26,6 +24,12 @@ type Installer struct {
 	Config *config.Config
 }
 
+type InstallCommandType string
+const (
+	InstallCommand InstallCommandType = "install"
+	UninstallCommand InstallCommandType = "uninstall"
+)
+
 func (i *Installer) Validate() (derrors.Error) {
 	if i.Config.Path == "" {
 		return derrors.NewInvalidArgumentError("path must be specified")
@@ -39,9 +43,20 @@ func (i *Installer) Print() {
 	log.Info().Str("path", i.Config.Path).Msg("installation path")
 }
 
-func (i *Installer) Run() (derrors.Error) {
+func (i *Installer) Run(command InstallCommandType) (derrors.Error) {
 	i.Print()
 
+	switch command {
+	case InstallCommand:
+		return i.Install()
+	case UninstallCommand:
+		return i.Uninstall()
+	default:
+		return derrors.NewInvalidArgumentError("invalid install command").WithParams(command)
+	}
+}
+
+func (i *Installer) Install() (derrors.Error) {
 	// Create destination
 	destDir := filepath.Join(i.Config.Path, defaults.BinDir)
 	err := os.MkdirAll(destDir, 0755)
@@ -90,4 +105,12 @@ func (i *Installer) Run() (derrors.Error) {
 	}
 
 	return nil
+}
+
+// Uninstall command will:
+// - Stop the system service
+// - Disable and remove the system service
+// - Delete the configuration file
+func (i *Installer) Uninstall() (derrors.Error) {
+	return derrors.NewUnimplementedError("uninstall not implemented")
 }

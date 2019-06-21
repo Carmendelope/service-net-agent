@@ -19,6 +19,9 @@ type Runner interface {
 	Start(errChan chan<- derrors.Error) derrors.Error
 	Stop()
 
+	// Disable all operations, but don't exit yet
+	Disable()
+
 	Alive() (bool, derrors.Error)
 }
 

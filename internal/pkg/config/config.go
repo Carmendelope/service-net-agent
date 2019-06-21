@@ -114,6 +114,29 @@ func (c *Config) Unset(key string) {
 	c.unsetLocked(key)
 }
 
+func (c *Config) DeleteConfigFile() derrors.Error {
+	// Don't want to delete mid-write
+	c.writeLock.Lock()
+	defer c.writeLock.Unlock()
+
+	// Just checking if our code doesn't do weird things
+	if c.parent != nil {
+		return derrors.NewInvalidArgumentError("can't delete config file for a sub-config")
+	}
+
+	// Check if file exists. Ok if not, just don't try to delete.
+	if _, err := os.Stat(c.ConfigFile); os.IsNotExist(err) {
+		return nil
+	}
+
+	err := os.Remove(c.ConfigFile)
+	if err != nil {
+		return derrors.NewInternalError("failed to delete config file", err).WithParams(c.ConfigFile)
+	}
+
+	return nil
+}
+
 func (c *Config) unsetLocked(key string) {
 	// Viper is not meant for deleting keys - we deep-copy everything,
 	// skipping keys that match

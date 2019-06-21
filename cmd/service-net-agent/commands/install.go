@@ -41,7 +41,7 @@ func onInstall() {
 		Fail(err, "invalid configuration")
 	}
 
-	err = installer.Run()
+	err = installer.Run(install.InstallCommand)
 	if err != nil {
 		Fail(err, "installation failed")
 	}

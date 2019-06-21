@@ -78,6 +78,15 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	return nil
 }
 
+// Remove system service
+func (i *Installer) Remove() (derrors.Error) {
+	// Since we've created the unit file in our own path, enabling created
+	// a symlink in /etc/systemd/system. Disabling will remove that symlink
+	// so there's no need to explicitly remove. The unit file will get
+	// deleted when our whole path (e.g., /opt/nalej) gets removed
+	return nil
+}
+
 // Enable system service
 func (i *Installer) Enable() (derrors.Error) {
 	log.Debug().Str("name", i.name).Msg("enabling system service")
@@ -95,4 +104,10 @@ func (i *Installer) Enable() (derrors.Error) {
 	}
 
 	return enableUnit(filename)
+}
+
+// Disable system service
+func (i *Installer) Disable() (derrors.Error) {
+	log.Debug().Str("name", i.name).Msg("disabling system service")
+	return disableUnit(i.name)
 }

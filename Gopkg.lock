@@ -376,7 +376,10 @@
 [[projects]]
   digest = "1:caf839a4741eb24688de1e400e2a3d933542e47dbb10362ff357ba8b8094d1ac"
   name = "github.com/nalej/infra-net-plugin"
-  packages = ["."]
+  packages = [
+    ".",
+    "ping",
+  ]
   pruneopts = ""
   revision = "3cd6896122c6ff795bb4b0be1e9fbfe3f931187a"
   version = "v1.0.0"
@@ -790,6 +793,7 @@
     "github.com/nalej/grpc-utils/pkg/conversions",
     "github.com/nalej/grpc-utils/pkg/test",
     "github.com/nalej/infra-net-plugin",
+    "github.com/nalej/infra-net-plugin/ping",
     "github.com/nalej/sysinfo",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",

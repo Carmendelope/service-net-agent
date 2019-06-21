@@ -24,7 +24,7 @@ type Service struct {
 	Config *config.Config
 	Client *client.AgentClient
 
-	stopChan chan bool
+	stopChan chan struct{}
 	lastBeat time.Time
 }
 
@@ -67,6 +67,7 @@ func (s *Service) StartCorePlugin() (derrors.Error) {
 	// control the service
 	conf := viper.New()
 	conf.Set("runner", s)
+	conf.Set("config", s.Config)
 
 	derr := plugin.StartPlugin("core", conf)
 	if derr != nil {
@@ -125,8 +126,8 @@ func (s *Service) Run() (derrors.Error) {
 		return derr
 	}
 
-	stop := false
-	for !stop {
+	s.stopChan = make(chan struct{})
+	for s.stopChan != nil {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
@@ -142,7 +143,7 @@ func (s *Service) Run() (derrors.Error) {
 				s.lastBeat = time.Now()
 			}
 		case <-s.stopChan:
-			stop = true
+			s.stopChan = nil
 		}
 	}
 
@@ -158,14 +159,20 @@ func (s *Service) errChanRun(errChan chan<- derrors.Error) {
 }
 
 func (s *Service) Start(errChan chan<- derrors.Error) derrors.Error {
-	s.stopChan = make(chan bool, 1)
-
 	go s.errChanRun(errChan)
 	return nil
 }
 
 func (s *Service) Stop() {
-	s.stopChan <- true
+	// Recover to avoid race conditions stopping and uninstalling
+	// simultaneously, or running multiple uninstalls
+	defer func() {
+		if r := recover(); r != nil {
+			log.Debug().Msg("already stopping")
+		}
+	}()
+
+	close(s.stopChan)
 }
 
 func (s *Service) Alive() (bool, derrors.Error) {
@@ -175,4 +182,8 @@ func (s *Service) Alive() (bool, derrors.Error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func (s *Service) Disable() {
+	// TBD
 }

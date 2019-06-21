@@ -108,6 +108,25 @@ func enableUnit(unit string) derrors.Error {
 	return nil
 }
 
+func disableUnit(unit string) derrors.Error {
+	conn, err := dbus.NewSystemdConnection()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer conn.Close()
+
+	status, err := conn.DisableUnitFiles([]string{unit}, false /* not runtime-only */)
+	if err != nil {
+		return derrors.NewInternalError("unable to disable system service", err)
+	}
+
+	for _, s := range(status) {
+		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
+	}
+
+	return nil
+}
+
 func notify(state string) {
 	ok, err := daemon.SdNotify(false, state)
 	if err != nil {
