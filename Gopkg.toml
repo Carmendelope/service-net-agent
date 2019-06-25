@@ -31,15 +31,15 @@ required = ["github.com/shirou/w32"]
 
 [[constraint]]
   name = "github.com/nalej/grpc-edge-controller-go"
-  version = "v0.0.11"
+  version = "=v0.0.13"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-manager-go"
-  version = "v0.0.23"
+  version = "=v0.0.45"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-go"
-  version = "v0.0.11"
+  version = "=v0.0.25"
 
 
 [[constraint]]
@@ -61,10 +61,6 @@ required = ["github.com/shirou/w32"]
 [[constraint]]
   name = "github.com/denisbrodbeck/machineid"
   version = "v1.0.1"
-
- [[constraint]]
-      name="github.com/nalej/grpc-authx-go"
-      version="v0.0.49"
 
 [[constraint]]
   name = "github.com/influxdata/telegraf"

@@ -8,6 +8,7 @@ package run
 
 import (
 	"context"
+	grpc_inventory_go "github.com/nalej/grpc-inventory-go"
 	"sync"
 	"time"
 
@@ -84,7 +85,7 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	// more time to send these out (in parallel with operation).
 	close(d.opQueue)
 	for op := range (d.opQueue) {
-		status := grpc_inventory_manager_go.AgentOpStatus_FAIL
+		status := grpc_inventory_go.OpStatus_FAIL
 		info := "agent stopped"
 		d.respond(op, status, info)
 	}
@@ -135,15 +136,15 @@ func wait(wg *sync.WaitGroup, timeoutChan <-chan time.Time) bool {
 // operation we can return an error to Edge Controller.
 func (d *Dispatcher) Dispatch(op *grpc_inventory_manager_go.AgentOpRequest) derrors.Error {
 	// Make dispatching non-blocking
-	var status grpc_inventory_manager_go.AgentOpStatus
+	var status grpc_inventory_go.OpStatus
 	var info string
 	select {
 	case d.opQueue <- op:
 		log.Debug().Str("operation_id", op.GetOperationId()).Msg("queued operation")
-		status = grpc_inventory_manager_go.AgentOpStatus_SCHEDULED
+		status = grpc_inventory_go.OpStatus_SCHEDULED
 	default:
 		log.Debug().Str("operation_id", op.GetOperationId()).Msg("operation queue full")
-		status = grpc_inventory_manager_go.AgentOpStatus_FAIL
+		status = grpc_inventory_go.OpStatus_FAIL
 		info = "agent operation queue full"
 	}
 
@@ -153,7 +154,7 @@ func (d *Dispatcher) Dispatch(op *grpc_inventory_manager_go.AgentOpRequest) derr
 	return nil
 }
 
-func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, status grpc_inventory_manager_go.AgentOpStatus, info string) {
+func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, status grpc_inventory_go.OpStatus, info string) {
 	response := &grpc_inventory_manager_go.AgentOpResponse{
 		OrganizationId: op.GetOrganizationId(),
 		EdgeControllerId: op.GetEdgeControllerId(),
@@ -224,11 +225,11 @@ func (d *Dispatcher) opWorker(ctx context.Context) {
 				Interface("params", params).
 				Msg("executing operation request")
 
-			status := grpc_inventory_manager_go.AgentOpStatus_SUCCESS
+			status := grpc_inventory_go.OpStatus_SUCCESS
 			result, derr := d.worker.Execute(ctx, pluginName, opName, params)
 			if derr != nil {
 				log.Warn().Err(derr).Str("operation_id", opId).Msg("failed executing operation")
-				status = grpc_inventory_manager_go.AgentOpStatus_FAIL
+				status = grpc_inventory_go.OpStatus_FAIL
 				result = derr.Error()
 			}
 			d.respond(op, status, result)
