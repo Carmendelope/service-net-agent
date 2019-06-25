@@ -78,43 +78,9 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	return nil
 }
 
-// Enable system service
-func (i *Installer) Enable() (derrors.Error) {
-	log.Debug().Str("name", i.name).Msg("enabling system service")
-
-	// Connect to Windows service manager
-	m, err := mgr.Connect()
-	if err != nil {
-		return derrors.NewInternalError("unable to connect to system service manager", err)
-	}
-	defer m.Disconnect()
-
-	// Get service
-	s, err := m.OpenService(i.name)
-	if err != nil {
-		return derrors.NewInvalidArgumentError("service not installed", err).WithParams(i.name)
-	}
-	defer s.Close()
-
-	// Get current config
-	c, err := s.Config()
-	if err != nil {
-		return derrors.NewInternalError("unable to retrieve service config", err).WithParams(i.name)
-	}
-
-	// Set auto-start
-	c.StartType = mgr.StartAutomatic
-
-	// Update config
-	err = s.UpdateConfig(c)
-	if err != nil {
-		return derrors.NewInternalError("unable to set new service config", err).WithParams(i.name)
-	}
-
-	return nil
-}
-
 func (i *Installer) Remove() (derrors.Error) {
+	log.Debug().Str("name", i.name).Msg("removing service")
+
 	m, err := mgr.Connect()
 	if err != nil {
 		return derrors.NewInternalError("unable to connect to system service manager", err)
@@ -136,6 +102,55 @@ func (i *Installer) Remove() (derrors.Error) {
 	err = eventlog.Remove(i.name)
 	if err != nil {
 		return derrors.NewInternalError("unable to remove event log entries", err).WithParams(i.name)
+	}
+
+	// TODO: Reboot?
+
+	return nil
+}
+
+// Enable system service
+func (i *Installer) Enable() (derrors.Error) {
+	log.Debug().Str("name", i.name).Msg("enabling system service")
+
+	return i.setAutoManual(mgr.StartAutomatic)
+}
+
+// Disable system service
+func (i *Installer) Disable() (derrors.Error) {
+	log.Debug().Str("name", i.name).Msg("disabling system service")
+
+	return i.setAutoManual(mgr.StartManual)
+}
+
+func (i *Installer) setAutoManual(startType uint32) (derrors.Error) {
+	// Connect to Windows service manager
+	m, err := mgr.Connect()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer m.Disconnect()
+
+	// Get service
+	s, err := m.OpenService(i.name)
+	if err != nil {
+		return derrors.NewInvalidArgumentError("service not installed", err).WithParams(i.name)
+	}
+	defer s.Close()
+
+	// Get current config
+	c, err := s.Config()
+	if err != nil {
+		return derrors.NewInternalError("unable to retrieve service config", err).WithParams(i.name)
+	}
+
+	// Set auto-start
+	c.StartType = startType
+
+	// Update config
+	err = s.UpdateConfig(c)
+	if err != nil {
+		return derrors.NewInternalError("unable to set new service config", err).WithParams(i.name)
 	}
 
 	return nil

@@ -108,6 +108,26 @@ func enableUnit(unit string) derrors.Error {
 	return nil
 }
 
+func disableUnit(servicename string) derrors.Error {
+	conn, err := dbus.NewSystemdConnection()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer conn.Close()
+
+	unit := fmt.Sprintf("%s.%s", servicename, systemDUnitExt)
+	status, err := conn.DisableUnitFiles([]string{unit}, false /* not runtime-only */)
+	if err != nil {
+		return derrors.NewInternalError("unable to disable system service", err)
+	}
+
+	for _, s := range(status) {
+		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
+	}
+
+	return nil
+}
+
 func notify(state string) {
 	ok, err := daemon.SdNotify(false, state)
 	if err != nil {
@@ -170,6 +190,43 @@ func start(servicename string) derrors.Error {
 		log.Error().Str("name", servicename).Msg("service not started because of a failed dependency")
 	case "skipped":
 		log.Warn().Str("name", servicename).Msg("service skipped; service not applicable to currently running units")
+	}
+
+	if msg != "done" {
+		return derrors.NewInternalError("failed to start system service").WithParams(msg)
+	}
+
+	return nil
+}
+
+func stop(servicename string) derrors.Error {
+	conn, err := dbus.NewSystemdConnection()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer conn.Close()
+
+	msgChan := make(chan string, 1)
+	unit := fmt.Sprintf("%s.%s", servicename, systemDUnitExt)
+	_, err = conn.StopUnit(unit, "replace", msgChan)
+	if err != nil {
+		return derrors.NewInternalError("failed to request stop from system service manager", err).WithParams(unit)
+	}
+
+	msg := <-msgChan
+	switch msg {
+	case "done":
+		log.Info().Str("name", servicename).Msg("service stopped")
+	case "canceled", "timeout", "failed":
+		log.Error().Str("reason", msg).Str("name", servicename).Msg("stop failed")
+	case "dependency":
+		log.Error().Str("name", servicename).Msg("service not stopped because of a failed dependency")
+	case "skipped":
+		log.Warn().Str("name", servicename).Msg("service skipped; service not applicable to currently running units")
+	}
+
+	if msg != "done" {
+		return derrors.NewInternalError("failed to stop system service").WithParams(msg)
 	}
 
 	return nil

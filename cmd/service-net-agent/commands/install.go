@@ -25,26 +25,37 @@ var installCmd = &cobra.Command{
 	Long: "Install Service Net Agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		setup(cmd)
-		onInstall()
+		onInstall(install.InstallCommand)
+	},
+}
+
+var uninstallCmd = &cobra.Command{
+	Use: "uninstall",
+	Short: "Install Service Net Agent",
+	Long: "Install Service Net Agent",
+	Run: func(cmd *cobra.Command, args []string) {
+		setup(cmd)
+		onInstall(install.UninstallCommand)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(installCmd)
+	rootCmd.AddCommand(uninstallCmd)
 }
 
-func onInstall() {
-	log.Info().Msg("Starting installation")
+func onInstall(cmd install.InstallCommandType) {
+	log.Info().Msg("Starting " + cmd.String())
 
 	err := installer.Validate()
 	if err != nil {
 		Fail(err, "invalid configuration")
 	}
 
-	err = installer.Run()
+	err = installer.Run(cmd)
 	if err != nil {
-		Fail(err, "installation failed")
+		Fail(err, cmd.String() + " failed")
 	}
 
-	log.Info().Msg("Installation successfull")
+	log.Info().Msg(cmd.String() + " successfull")
 }

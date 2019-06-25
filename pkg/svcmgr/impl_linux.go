@@ -112,3 +112,9 @@ func Start(servicename string) derrors.Error {
 	// SystemD implementation
 	return start(servicename)
 }
+
+// Stop system service
+func Stop(servicename string) (derrors.Error) {
+	log.Debug().Str("name", servicename).Msg("stopping system service")
+	return stop(servicename)
+}

@@ -31,7 +31,8 @@ func (b *Beater) Beat(timeout time.Duration) (bool, derrors.Error) {
 
 	var beatSent = false
 
-	beatCtx, _ := context.WithTimeout(context.Background(), timeout)
+	beatCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	beatData, beatErrs := agentplugin.CollectHeartbeatData(beatCtx)
 
 	// Warn about errors

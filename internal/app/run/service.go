@@ -11,19 +11,21 @@ import (
 	"time"
 
 	"github.com/nalej/derrors"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/nalej/service-net-agent/internal/pkg/client"
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/pkg/plugin"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type Service struct {
 	Config *config.Config
 	Client *client.AgentClient
 
-	stopChan chan bool
+	stopChan chan struct{}
+	disableChan chan struct{}
 	lastBeat time.Time
 }
 
@@ -61,6 +63,21 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 	return nil
 }
 
+func (s *Service) StartCorePlugin() (derrors.Error) {
+	// We pass ourselves in the config, so that the core plugin can
+	// control the service
+	conf := viper.New()
+	conf.Set("runner", s)
+	conf.Set("config", s.Config)
+
+	derr := plugin.StartPlugin("core", conf)
+	if derr != nil {
+		return derr
+	}
+
+	return nil
+}
+
 func (s *Service) Run() (derrors.Error) {
 	if s.Client == nil {
 		return derrors.NewInvalidArgumentError("client not set")
@@ -69,7 +86,12 @@ func (s *Service) Run() (derrors.Error) {
 	printRegisteredPlugins()
 	s.Config.Print()
 
-	derr := s.RestartPlugins()
+	derr := s.StartCorePlugin()
+	if derr != nil {
+		return derr
+	}
+
+	derr = s.RestartPlugins()
 	if derr != nil {
 		return derr
 	}
@@ -105,8 +127,9 @@ func (s *Service) Run() (derrors.Error) {
 		return derr
 	}
 
-	stop := false
-	for !stop {
+	s.stopChan = make(chan struct{})
+	s.disableChan = make(chan struct{})
+	for s.stopChan != nil && s.disableChan != nil {
 		select {
 		case <-ticker.C:
 			// Send heartbeat
@@ -122,11 +145,18 @@ func (s *Service) Run() (derrors.Error) {
 				s.lastBeat = time.Now()
 			}
 		case <-s.stopChan:
-			stop = true
+			s.stopChan = nil
+		case <-s.disableChan:
+			s.disableChan = nil
 		}
 	}
 
 	derr = dispatcher.Stop(s.Config.GetDuration("agent.shutdown_timeout"))
+
+	// Only disabled, still waiting for stop
+	if s.stopChan != nil {
+		<-s.stopChan
+	}
 
 	log.Debug().Msg("stopped")
 	return derr
@@ -138,14 +168,20 @@ func (s *Service) errChanRun(errChan chan<- derrors.Error) {
 }
 
 func (s *Service) Start(errChan chan<- derrors.Error) derrors.Error {
-	s.stopChan = make(chan bool, 1)
-
 	go s.errChanRun(errChan)
 	return nil
 }
 
 func (s *Service) Stop() {
-	s.stopChan <- true
+	// Recover to avoid race conditions stopping and uninstalling
+	// simultaneously, or running multiple uninstalls
+	defer func() {
+		if r := recover(); r != nil {
+			log.Debug().Msg("already stopping")
+		}
+	}()
+
+	close(s.stopChan)
 }
 
 func (s *Service) Alive() (bool, derrors.Error) {
@@ -155,4 +191,18 @@ func (s *Service) Alive() (bool, derrors.Error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func (s *Service) Disable() {
+	// Recover to avoid race conditions stopping and uninstalling
+	// simultaneously, or running multiple uninstalls
+	defer func() {
+		if r := recover(); r != nil {
+			log.Debug().Msg("already disabled")
+		}
+	}()
+
+	log.Info().Msg("disabling agent heartbeat and operations")
+
+	close(s.disableChan)
 }

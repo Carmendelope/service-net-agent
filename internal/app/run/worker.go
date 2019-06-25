@@ -9,11 +9,13 @@ package run
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/nalej/derrors"
+	"github.com/nalej/infra-net-plugin"
 
 	"github.com/nalej/service-net-agent/internal/pkg/config"
-	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/service-net-agent/internal/pkg/defaults"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -63,7 +65,9 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 			w.writePluginConfig(name, nil)
 		}
 	default:
-		result, derr = plugin.ExecuteCommand(ctx, name, cmd, params)
+		execCtx, cancel := context.WithTimeout(ctx, defaults.AgentOpTimeout * time.Second)
+		defer cancel()
+		result, derr = plugin.ExecuteCommand(execCtx, name, cmd, params)
 	}
 
 	return result, derr

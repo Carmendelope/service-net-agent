@@ -11,7 +11,7 @@ import (
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-edge-controller-go"
-	"github.com/nalej/service-net-agent/pkg/plugin"
+	"github.com/nalej/infra-net-plugin"
 )
 
 type AgentPlugin interface {

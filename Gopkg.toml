@@ -74,4 +74,7 @@ required = ["github.com/shirou/w32"]
   name = "github.com/influxdata/toml"
   branch = "master"
 
+[[constaint]]
+  name = "github.com/nalej/infra-net-plugin"
+  version = "v1.0.0"
 

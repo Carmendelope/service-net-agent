@@ -11,9 +11,9 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/grpc-edge-controller-go"
+	"github.com/nalej/infra-net-plugin"
+	_ "github.com/nalej/infra-net-plugin/ping"
 
-	"github.com/nalej/service-net-agent/pkg/plugin"
-	_ "github.com/nalej/service-net-agent/pkg/plugin/ping"
 	"github.com/nalej/service-net-agent/internal/pkg/agentplugin"
 
 	"github.com/onsi/ginkgo"

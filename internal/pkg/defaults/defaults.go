@@ -18,6 +18,7 @@ const (
 	AgentCommTimeout = 15
 	AgentShutdownTimeout = 60
 	AgentOpQueueLen = 32
+	AgentOpTimeout = 15 // Any individual operation can take at most this long
 
 	// Used to generate a unique but safe agent id
 	ApplicationID = "allyourbasearebelongtonalej"

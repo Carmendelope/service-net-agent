@@ -7,6 +7,8 @@
 package svcmgr
 
 import (
+	"time"
+
 	"github.com/nalej/derrors"
 
 	"github.com/rs/zerolog/log"
@@ -129,5 +131,41 @@ func Start(servicename string) derrors.Error {
 	}
 
 	log.Info().Str("name", servicename).Msg("service started")
+	return nil
+}
+
+// Stop system service
+func Stop(servicename string) (derrors.Error) {
+	// Connect to Windows service manager
+	m, err := mgr.Connect()
+	if err != nil {
+		return derrors.NewInternalError("unable to connect to system service manager", err)
+	}
+	defer m.Disconnect()
+
+	// Get service
+	s, err := m.OpenService(servicename)
+	if err != nil {
+		return derrors.NewInvalidArgumentError("service not installed", err).WithParams(servicename)
+	}
+	defer s.Close()
+
+	status, err := s.Control(svc.Stop)
+	if err != nil {
+		return derrors.NewInvalidArgumentError("unable to stop system service", err).WithParams(servicename)
+	}
+
+	timeout := time.Now().Add(10 * time.Second)
+	for status.State != svc.Stopped {
+		if timeout.Before(time.Now()) {
+			return derrors.NewInternalError("timeout waiting for service to stop")
+		}
+		time.Sleep(300 * time.Millisecond)
+		status, err = s.Query()
+		if err != nil {
+			return derrors.NewInternalError("could not retrieve service status", err)
+		}
+	}
+	log.Info().Str("name", servicename).Msg("service stopped")
 	return nil
 }
