@@ -48,7 +48,7 @@ required = ["github.com/shirou/w32"]
 
 [[constraint]]
   name = "github.com/nalej/sysinfo"
-  version = "v1.0.1"
+  version = "v1.1.0"
 
 [[constraint]]
   name = "google.golang.org/grpc"
@@ -70,7 +70,7 @@ required = ["github.com/shirou/w32"]
   name = "github.com/influxdata/toml"
   branch = "master"
 
-[[constaint]]
+[[constraint]]
   name = "github.com/nalej/infra-net-plugin"
   version = "v1.0.0"
 
