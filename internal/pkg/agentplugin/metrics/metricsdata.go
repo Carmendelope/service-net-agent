@@ -8,6 +8,7 @@ package metrics
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -49,7 +50,12 @@ func NewMetric(name string, tags map[string]string, fields map[string]interface{
 		case uint64:
 			intVal = v
 		case float64:
-			intVal = uint64(v)
+			var derr derrors.Error
+			intVal, derr = floatToUint(v)
+			if derr != nil {
+				log.Warn().Err(derr).Float64("val", v).Msg("field value out of bounds")
+				continue
+			}
 		default:
 			return nil, derrors.NewInternalError("invalid metric type").WithParams(name, fmt.Sprintf("%T", v))
 		}
@@ -88,4 +94,13 @@ func (d *MetricsData) ToGRPC() *grpc_edge_controller_go.PluginData {
 	}
 
 	return data
+}
+
+func floatToUint(f float64) (uint64, derrors.Error) {
+	if f < 0 || f > math.MaxInt64 { // After MaxInt64 conversions break it seems
+		return 0, derrors.NewInvalidArgumentError("out-of-bounds conversion from float64 to uint64").WithParams(f)
+	}
+
+	i := uint64(math.Round(f))
+	return i, nil
 }
