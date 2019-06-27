@@ -6,6 +6,7 @@ package run
 
 import (
 	"context"
+	"github.com/nalej/grpc-inventory-go"
 	"time"
 
 	"github.com/nalej/grpc-inventory-manager-go"
@@ -48,7 +49,7 @@ var _ = ginkgo.Describe("dispatch", func() {
 			gomega.Expect(response.GetAssetId()).To(gomega.Equal("testasset"))
 			gomega.Expect(response.GetOperationId()).To(gomega.Equal("testop"))
 			gomega.Expect(time.Unix(response.GetTimestamp(), 0)).To(gomega.BeTemporally("~", time.Now(), time.Second))
-			gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_manager_go.AgentOpStatus_SUCCESS))
+			gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_go.OpStatus_SUCCESS))
 		})
 	})
 
@@ -59,7 +60,7 @@ var _ = ginkgo.Describe("dispatch", func() {
 				resQueue: make(chan *grpc_inventory_manager_go.AgentOpResponse, 1),
 			}
 
-			d.respond(testRequest, grpc_inventory_manager_go.AgentOpStatus_SUCCESS, "")
+			d.respond(testRequest, grpc_inventory_go.OpStatus_SUCCESS, "")
 			close(d.resQueue)
 
 			cur := testHandler.GetNumCallbacks()
@@ -104,7 +105,7 @@ var _ = ginkgo.Describe("dispatch", func() {
 		gomega.Expect(derr).To(gomega.Succeed())
 
 		response := <-d.resQueue
-		gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_manager_go.AgentOpStatus_FAIL))
+		gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_go.OpStatus_FAIL))
 		gomega.Expect(response.GetInfo()).To(gomega.ContainSubstring("stopped"))
 	})
 
@@ -118,7 +119,7 @@ var _ = ginkgo.Describe("dispatch", func() {
 		gomega.Expect(derr).To(gomega.Succeed())
 
 		response := <-d.resQueue
-		gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_manager_go.AgentOpStatus_FAIL))
+		gomega.Expect(response.GetStatus()).To(gomega.Equal(grpc_inventory_go.OpStatus_FAIL))
 		gomega.Expect(response.GetInfo()).To(gomega.ContainSubstring("full"))
 	})
 })
