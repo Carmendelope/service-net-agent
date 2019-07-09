@@ -57,12 +57,14 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 		derr = plugin.StartPlugin(name, config)
 		if derr == nil {
 			w.writePluginConfig(name, config)
+			result = fmt.Sprintf("%s enabled", name.String())
 		}
 	case plugin.StopCommand:
 		derr = plugin.StopPlugin(name)
 		if derr == nil {
 			// Remove from config file
 			w.writePluginConfig(name, nil)
+			result = fmt.Sprintf("%s disabled", name.String())
 		}
 	default:
 		execCtx, cancel := context.WithTimeout(ctx, defaults.AgentOpTimeout * time.Second)
