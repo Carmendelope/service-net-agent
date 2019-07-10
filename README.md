@@ -62,3 +62,21 @@ Skipping over details of an agent receiving commands and scheduling those, the a
  - The registry calls the command function on the plugin
 
  Stop plugin functionality works similar to the start functionality above; receiving, scheduling and execution operations in a Goroutine is handled by the main thread of the agent and is captured in what is called "caller" above. A description of that is outside the scope of the plugin architecture.
+
+## Manual testing
+
+There is a stub edge controller included for simple testing. It can be built with `make APPS=ec-stub`. Run ec-stub without command-line options - it will respond to each heartbeat with a list of commands: start ping plugin, ping, stop ping plugin. To change the `ec-stub` functionality the code in `internal/pkg/ec-stub/handler.go` should be changed (but not committed!).
+
+To run an agent with the stub, create a `config.yaml`:
+
+```
+agent:
+  asset_id: test-asset
+  token: test-token
+controller:
+  # Address and port of stub EC - this is the right IP for agent running on VirtualBox and ec-stub running on the host
+  address: 127.0.0.1:12345
+  tls: false
+```
+
+Run the agent with `./service-net-agent run --debug --service --config config.yaml` and observe the log lines of both `ec-stub` as well as the agent.

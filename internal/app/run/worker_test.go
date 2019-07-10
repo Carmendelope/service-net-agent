@@ -21,7 +21,7 @@ var _ = ginkgo.Describe("worker", func() {
 		}
 
 		worker := NewWorker(testConfig.GetSubConfig("test"))
-		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", params)).To(gomega.BeZero())
+		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", params)).To(gomega.Equal("ping enabled"))
 
 		// This above should have written the config. Check that.
 		c2 := config.NewConfig()
@@ -36,15 +36,15 @@ var _ = ginkgo.Describe("worker", func() {
 
 	ginkgo.It("should stop a plugin", func() {
 		worker := NewWorker(testConfig)
-		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", nil)).To(gomega.BeZero())
+		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", nil)).To(gomega.Equal("ping enabled"))
 
 		// And stop
-		gomega.Expect(worker.Execute(context.Background(), testPlugin, "stop", nil)).To(gomega.BeZero())
+		gomega.Expect(worker.Execute(context.Background(), testPlugin, "stop", nil)).To(gomega.Equal("ping disabled"))
 	})
 
 	ginkgo.It("should execute a plugin command", func() {
 		worker := NewWorker(testConfig)
-		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", nil)).To(gomega.BeZero())
+		gomega.Expect(worker.Execute(context.Background(), testPlugin, "start", nil)).To(gomega.Equal("ping enabled"))
 
 		params := map[string]string{
 			"msg": "test",
