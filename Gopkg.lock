@@ -385,7 +385,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:1f4cf2447efa67316bd682522a22ca65ad01918cd56b3fe0ebee6290e5c91d68"
+  digest = "1:a4dce41a34ac8dfd07170ba8ce7d1c37ba3de83a47f4d48d21981a3ed0339b1f"
   name = "github.com/nalej/sysinfo"
   packages = [
     ".",
@@ -395,8 +395,8 @@
     "version",
   ]
   pruneopts = ""
-  revision = "0aac4960d4896a2a782de6e4ce7562fd98c5473a"
-  version = "v1.1.0"
+  revision = "07dfa0aa90d308f2e2734d30ca81b9051ac9bc75"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:ccd0def9f0b82b61c5e54fcbfccf528eabb13b489d008e46dc16b808c2e1f765"
