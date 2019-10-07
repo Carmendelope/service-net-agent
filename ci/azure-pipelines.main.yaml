@@ -1,6 +1,4 @@
 variables: 
-  - name: appList
-    value: 'service-net-agent'  # Space separated list of apps to build
   - group: common-vars
   - group: slack-webhooks
   - group: ssh-credentials
@@ -12,8 +10,6 @@ variables:
     value: '$(system.defaultWorkingDirectory)/gopath'
   - name: modulePath
     value: '$(GOPATH)/src/github.com/$(Build.Repository.Name)'
-  - name: authorName
-    value: ""
 
 resources:
   repositories:
@@ -30,6 +26,8 @@ jobs:
   
   steps:
   - template: misc/variables.yaml@ci_templates
+
+  - template: misc/nalej-component.yaml@ci_templates
 
   - template: slack/build/start.yaml@ci_templates
     parameters:
@@ -58,6 +56,10 @@ jobs:
       modulePath: $(modulePath)
 
   - template: go/test.yaml@ci_templates
+    parameters:
+      modulePath: $(modulePath)
+
+  - template: go/gofmt.yaml@ci_templates
     parameters:
       modulePath: $(modulePath)
 
