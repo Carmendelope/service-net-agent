@@ -17,7 +17,7 @@ resources:
       type: github
       name: nalej/ci-templates
       endpoint: nalej
-      tags: v1.0.0
+      tags: v1.0.1
 
 jobs:
 - job: MainWorkflow
@@ -68,6 +68,7 @@ jobs:
     parameters:
       modulePath: $(modulePath)
       appList: $(appList)
+      version: $(version)
   
   - template: slack/build/finish.yaml@ci_templates
     parameters:
