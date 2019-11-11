@@ -1,3 +1,5 @@
+// +build !linux,!windows
+
 /*
  * Copyright 2019 Nalej
  *
@@ -14,8 +16,6 @@
  * limitations under the License.
  *
  */
-
-// +build !linux,!windows
 
 // Service manager - systemd implementation for linux
 
