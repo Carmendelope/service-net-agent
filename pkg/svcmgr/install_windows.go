@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 // Service manager - service installation for Windows
@@ -32,7 +45,7 @@ func NewInstaller(name, root string) (*Installer, derrors.Error) {
 }
 
 // Install a service
-func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.Error) {
+func (i *Installer) Install(bin string, args []string, desc ...string) derrors.Error {
 	log.Debug().Str("name", i.name).Str("bin", bin).Msg("installing service")
 
 	// Check if exists and executable
@@ -58,10 +71,10 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	// Create the service and associated event log entries
 	description := strings.Join(desc, " ")
 	conf := mgr.Config{
-		StartType: mgr.StartManual,
+		StartType:    mgr.StartManual,
 		ErrorControl: mgr.ErrorNormal,
-		DisplayName: description,
-		Description: description,
+		DisplayName:  description,
+		Description:  description,
 	}
 	s, err = m.CreateService(i.name, fullPath, conf, args...)
 	if err != nil {
@@ -69,7 +82,7 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	}
 	defer s.Close()
 
-	err = eventlog.InstallAsEventCreate(i.name, eventlog.Error | eventlog.Warning | eventlog.Info)
+	err = eventlog.InstallAsEventCreate(i.name, eventlog.Error|eventlog.Warning|eventlog.Info)
 	if err != nil {
 		s.Delete()
 		return derrors.NewInternalError("unable to set up event log for service", err).WithParams(i.name)
@@ -78,7 +91,7 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 	return nil
 }
 
-func (i *Installer) Remove() (derrors.Error) {
+func (i *Installer) Remove() derrors.Error {
 	log.Debug().Str("name", i.name).Msg("removing service")
 
 	m, err := mgr.Connect()
@@ -110,20 +123,20 @@ func (i *Installer) Remove() (derrors.Error) {
 }
 
 // Enable system service
-func (i *Installer) Enable() (derrors.Error) {
+func (i *Installer) Enable() derrors.Error {
 	log.Debug().Str("name", i.name).Msg("enabling system service")
 
 	return i.setAutoManual(mgr.StartAutomatic)
 }
 
 // Disable system service
-func (i *Installer) Disable() (derrors.Error) {
+func (i *Installer) Disable() derrors.Error {
 	log.Debug().Str("name", i.name).Msg("disabling system service")
 
 	return i.setAutoManual(mgr.StartManual)
 }
 
-func (i *Installer) setAutoManual(startType uint32) (derrors.Error) {
+func (i *Installer) setAutoManual(startType uint32) derrors.Error {
 	// Connect to Windows service manager
 	m, err := mgr.Connect()
 	if err != nil {

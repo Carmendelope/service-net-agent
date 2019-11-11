@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package metrics
@@ -22,9 +35,9 @@ import (
 )
 
 var metricsDescriptor = plugin.PluginDescriptor{
-	Name: "metrics",
+	Name:        "metrics",
 	Description: "System metrics collection plugin",
-	NewFunc: NewMetrics,
+	NewFunc:     NewMetrics,
 }
 
 type Metrics struct {
@@ -37,10 +50,10 @@ var Inputs = []InputConfig{
 	InputConfig{
 		Name: "cpu",
 		Config: InputConfigMap{
-			"percpu": true,
-			"totalcpu": false,
+			"percpu":           true,
+			"totalcpu":         false,
 			"collect_cpu_time": true,
-			"report_active": false,
+			"report_active":    false,
 		},
 		Fields: []string{
 			"time_*",
@@ -82,7 +95,7 @@ func init() {
 func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 	inputsList := make([]*RunningInput, 0, len(Inputs))
 
-	for _, config := range(Inputs) {
+	for _, config := range Inputs {
 		running, derr := NewRunningInput(&config)
 		if derr != nil {
 			return nil, derr
@@ -99,7 +112,7 @@ func NewMetrics(config *viper.Viper) (plugin.Plugin, derrors.Error) {
 	return m, nil
 }
 
-func (m *Metrics) GetPluginDescriptor() (*plugin.PluginDescriptor) {
+func (m *Metrics) GetPluginDescriptor() *plugin.PluginDescriptor {
 	return &metricsDescriptor
 }
 
@@ -108,7 +121,7 @@ func (m *Metrics) Beat(ctx context.Context) (agentplugin.PluginHeartbeatData, de
 
 	// We can collect and process metrics in parallel
 	go func() {
-		for _, input := range(m.inputs) {
+		for _, input := range m.inputs {
 			err := input.Gather(metricChan)
 			if err != nil {
 				close(metricChan)
@@ -149,6 +162,6 @@ func (m *Metrics) Beat(ctx context.Context) (agentplugin.PluginHeartbeatData, de
 
 	return &MetricsData{
 		Timestamp: time.Now(),
-		Metrics: beatMetrics,
+		Metrics:   beatMetrics,
 	}, nil
 }

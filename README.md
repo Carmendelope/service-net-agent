@@ -1,7 +1,9 @@
-# service-net-agent
+# Service-net-agent
 Service Net Agent
 
-## Plugin infrastructure
+## Getting Started
+
+### Plugin infrastructure
 
 Agent plugins are defined in `internal/pkg/agentplugin`, in a subdirectory per plugin. The architecture is mostly generic (in `pkg/plugin`), with the only Agent-specific addition being the heartbeat data collection. A plugin can be instantiated, started and stopped. Furthermore, each plugin has a set of commands with parameters that it can execute.
 
@@ -44,7 +46,7 @@ An example plugin is provided in `pkg/plugin/ping`.
 
 **NOTE:** Make sure your plugin is enabled by importing it in `internal/app/run/plugins.go`.
 
-### Workflow
+#### Workflow
 
 Skipping over details of an agent receiving commands and scheduling those, the actual plugin workflow is as follows (from the start of the agent):
 
@@ -63,7 +65,7 @@ Skipping over details of an agent receiving commands and scheduling those, the a
 
  Stop plugin functionality works similar to the start functionality above; receiving, scheduling and execution operations in a Goroutine is handled by the main thread of the agent and is captured in what is called "caller" above. A description of that is outside the scope of the plugin architecture.
 
-## Manual testing
+#### Manual testing
 
 There is a stub edge controller included for simple testing. It can be built with `make APPS=ec-stub`. Run ec-stub without command-line options - it will respond to each heartbeat with a list of commands: start ping plugin, ping, stop ping plugin. To change the `ec-stub` functionality the code in `internal/pkg/ec-stub/handler.go` should be changed (but not committed!).
 
@@ -80,3 +82,55 @@ controller:
 ```
 
 Run the agent with `./service-net-agent run --debug --service --config config.yaml` and observe the log lines of both `ec-stub` as well as the agent.
+
+### Build and compile
+
+In order to build and compile this repository use the provided Makefile:
+
+```
+make all
+```
+
+This operation generates the binaries for this repo, download dependencies,
+run existing tests and generate ready-to-deploy Kubernetes files.
+
+### Run tests
+
+Tests are executed using Ginkgo. To run all the available tests:
+
+```
+make test
+```
+
+### Update dependencies
+
+Dependencies are managed using Godep. For an automatic dependencies download use:
+
+```
+make dep
+```
+
+In order to have all dependencies up-to-date run:
+
+```
+dep ensure -update -v
+```
+
+## Contributing
+
+Please read [contributing.md](contributing.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/nalej/service-net-agent/tags). 
+
+## Authors
+
+See also the list of [contributors](https://github.com/nalej/service-net-agent/contributors) who participated in this project.
+
+## License
+This project is licensed under the Apache 2.0 License - see the [LICENSE-2.0.txt](LICENSE-2.0.txt) file for details.
+
+
+

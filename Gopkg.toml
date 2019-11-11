@@ -27,24 +27,24 @@ required = ["github.com/shirou/w32"]
 
 [[constraint]]
   name = "github.com/nalej/derrors"
-  version = "v2.0.0"
+  version = "v2.1.0"
 
 [[constraint]]
   name = "github.com/nalej/grpc-edge-controller-go"
-  version = "v0.0.17"
+  version = "v0.0.18"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-manager-go"
-  version = "v0.0.53"
+  version = "v0.0.56"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-go"
-  version = "v0.0.29"
+  version = "v0.0.30"
 
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
-  version = "v1.4.0"
+  version = "v1.5.0"
 
 [[constraint]]
   name = "github.com/nalej/sysinfo"
@@ -72,5 +72,5 @@ required = ["github.com/shirou/w32"]
 
 [[constraint]]
   name = "github.com/nalej/infra-net-plugin"
-  version = "v1.0.0"
+  version = "v0.4.0"
 

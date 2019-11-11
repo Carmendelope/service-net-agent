@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package core
@@ -23,9 +36,9 @@ import (
 )
 
 var coreDescriptor = plugin.PluginDescriptor{
-	Name: "core",
+	Name:        "core",
 	Description: "Core agent control",
-	NewFunc: NewCore,
+	NewFunc:     NewCore,
 }
 
 type Core struct {
@@ -44,7 +57,7 @@ type Core struct {
 
 func init() {
 	uninstallCmd := plugin.CommandDescriptor{
-		Name: "uninstall",
+		Name:        "uninstall",
 		Description: "stop and disable agent",
 	}
 	coreDescriptor.AddCommand(uninstallCmd)
@@ -77,7 +90,7 @@ func NewCore(cfg *viper.Viper) (plugin.Plugin, derrors.Error) {
 	return c, nil
 }
 
-func (c *Core) GetPluginDescriptor() (*plugin.PluginDescriptor) {
+func (c *Core) GetPluginDescriptor() *plugin.PluginDescriptor {
 	return &coreDescriptor
 }
 

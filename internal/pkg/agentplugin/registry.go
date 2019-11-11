@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package agentplugin
@@ -41,7 +54,7 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 	var beatWaitGroup sync.WaitGroup
 
 	// Collect data in parallel
-	for name, p := range(r.Running()) {
+	for name, p := range r.Running() {
 		agentPlugin, ok := p.(AgentPlugin)
 		if !ok {
 			// Skip non-agent plugins in registry, but still mark
@@ -55,7 +68,7 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 		// We need to copy the variables to something local to this
 		// loop - the range will modify them and the running routines
 		// will use the modified values otherwise
-		go func(name plugin.PluginName, p AgentPlugin){
+		go func(name plugin.PluginName, p AgentPlugin) {
 			defer beatWaitGroup.Done()
 			data, err := p.Beat(ctx)
 
@@ -74,7 +87,7 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 
 	// Interruptable wait
 	doneChan := make(chan struct{})
-	go func(){
+	go func() {
 		beatWaitGroup.Wait()
 		close(doneChan)
 	}()
@@ -97,7 +110,7 @@ func (r *AgentRegistry) CollectHeartbeatData(ctx context.Context) (PluginHeartbe
 	}
 
 	// Set errors for interrupted Beats
-	for name := range(r.Running()) {
+	for name := range r.Running() {
 		err, found := errMap[name]
 		if !found {
 			if timedout {
