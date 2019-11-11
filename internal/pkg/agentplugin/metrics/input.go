@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package metrics
@@ -55,14 +68,14 @@ need and it makes it explicit what we actually collect.
 
 type InputConfigMap map[string]interface{}
 type InputConfig struct {
-	Name string
+	Name   string
 	Config InputConfigMap
 	Fields []string
 }
 
 type RunningInput struct {
 	Config *InputConfig
-	Input telegraf.Input
+	Input  telegraf.Input
 
 	filter filter.Filter
 }
@@ -92,7 +105,7 @@ func NewRunningInput(config *InputConfig) (*RunningInput, derrors.Error) {
 
 	r := &RunningInput{
 		Config: config,
-		Input: input,
+		Input:  input,
 		filter: f,
 	}
 
@@ -111,12 +124,12 @@ func (i *RunningInput) MakeMetric(metric telegraf.Metric) telegraf.Metric {
 
 	// Include requested fields
 	filterKeys := []string{}
-	for _, field := range(metric.FieldList()) {
+	for _, field := range metric.FieldList() {
 		if !i.filter.Match(field.Key) {
 			filterKeys = append(filterKeys, field.Key)
 		}
 	}
-	for _, key := range(filterKeys) {
+	for _, key := range filterKeys {
 		metric.RemoveField(key)
 	}
 
@@ -134,11 +147,10 @@ func (i *RunningInput) Gather(metricChan chan telegraf.Metric) error {
 	return i.Input.Gather(acc)
 }
 
-
 func CreateTomlTable(config map[string]interface{}) (*ast.Table, derrors.Error) {
 	fields := make(map[string]interface{}, len(config))
 
-	for k, v := range(config) {
+	for k, v := range config {
 		var astVal ast.Value
 		strVal := fmt.Sprint(v)
 

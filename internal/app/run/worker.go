@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package run
@@ -67,7 +80,7 @@ func (w *Worker) Execute(ctx context.Context, name plugin.PluginName, cmd plugin
 			result = fmt.Sprintf("%s disabled", name.String())
 		}
 	default:
-		execCtx, cancel := context.WithTimeout(ctx, defaults.AgentOpTimeout * time.Second)
+		execCtx, cancel := context.WithTimeout(ctx, defaults.AgentOpTimeout*time.Second)
 		defer cancel()
 		result, derr = plugin.ExecuteCommand(execCtx, name, cmd, params)
 	}
@@ -96,7 +109,7 @@ func (w *Worker) writePluginConfig(name plugin.PluginName, config *viper.Viper) 
 
 func createPluginConfig(params map[string]string) *viper.Viper {
 	conf := viper.New()
-	for k, v := range(params) {
+	for k, v := range params {
 		conf.Set(k, v)
 	}
 

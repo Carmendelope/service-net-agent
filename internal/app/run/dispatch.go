@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package run
@@ -46,10 +59,10 @@ func NewDispatcher(client *client.AgentClient, worker *Worker, queueLen int) (*D
 	ctx, cancelOpWorker := context.WithCancel(context.Background())
 
 	d := &Dispatcher{
-		client: client,
-		worker: worker,
-		opQueue: make(chan *grpc_inventory_manager_go.AgentOpRequest, queueLen),
-		resQueue: make(chan *grpc_inventory_manager_go.AgentOpResponse, queueLen),
+		client:         client,
+		worker:         worker,
+		opQueue:        make(chan *grpc_inventory_manager_go.AgentOpRequest, queueLen),
+		resQueue:       make(chan *grpc_inventory_manager_go.AgentOpResponse, queueLen),
 		cancelOpWorker: cancelOpWorker,
 	}
 
@@ -67,7 +80,7 @@ func NewDispatcher(client *client.AgentClient, worker *Worker, queueLen int) (*D
 	return d, nil
 }
 
-func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
+func (d *Dispatcher) Stop(timeout time.Duration) derrors.Error {
 	log.Debug().Msg("stopping operation dispatcher")
 
 	// Set timeout for complete shutdown routine
@@ -84,7 +97,7 @@ func (d *Dispatcher) Stop(timeout time.Duration) (derrors.Error) {
 	// We do this while the last operation is in progress so we have
 	// more time to send these out (in parallel with operation).
 	close(d.opQueue)
-	for op := range (d.opQueue) {
+	for op := range d.opQueue {
 		status := grpc_inventory_go.OpStatus_FAIL
 		info := "agent stopped"
 		d.respond(op, status, info)
@@ -156,13 +169,13 @@ func (d *Dispatcher) Dispatch(op *grpc_inventory_manager_go.AgentOpRequest) derr
 
 func (d *Dispatcher) respond(op *grpc_inventory_manager_go.AgentOpRequest, status grpc_inventory_go.OpStatus, info string) {
 	response := &grpc_inventory_manager_go.AgentOpResponse{
-		OrganizationId: op.GetOrganizationId(),
+		OrganizationId:   op.GetOrganizationId(),
 		EdgeControllerId: op.GetEdgeControllerId(),
-		AssetId: op.GetAssetId(),
-		OperationId: op.GetOperationId(),
-		Timestamp: time.Now().UTC().Unix(),
-		Status: status,
-		Info: info,
+		AssetId:          op.GetAssetId(),
+		OperationId:      op.GetOperationId(),
+		Timestamp:        time.Now().UTC().Unix(),
+		Status:           status,
+		Info:             info,
 	}
 
 	// We want to response in order, while not blocking main loop; hence

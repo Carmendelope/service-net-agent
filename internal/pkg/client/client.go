@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package client
@@ -26,18 +39,18 @@ import (
 )
 
 type ConnectionOptions struct {
-	UseTLS bool
-	CACert string
+	UseTLS   bool
+	CACert   string
 	Insecure bool
-	Timeout time.Duration
-	Token string
+	Timeout  time.Duration
+	Token    string
 }
 
 type AgentClient struct {
 	grpc_edge_controller_go.AgentClient
 	*grpc.ClientConn
 	address string
-	opts *ConnectionOptions
+	opts    *ConnectionOptions
 }
 
 func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derrors.Error) {
@@ -45,7 +58,7 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 
 	agentClient := &AgentClient{
 		address: address,
-		opts: opts,
+		opts:    opts,
 	}
 
 	dialOpts, derr := agentClient.getDialOptions()
@@ -64,7 +77,7 @@ func NewAgentClient(address string, opts *ConnectionOptions) (*AgentClient, derr
 	return agentClient, nil
 }
 
-func (c *AgentClient) GetContext() (context.Context) {
+func (c *AgentClient) GetContext() context.Context {
 	meta := metadata.New(map[string]string{"Authorization": c.opts.Token})
 	ctx := metadata.NewOutgoingContext(context.Background(), meta)
 	if c.opts.Timeout > 0 {
@@ -114,8 +127,8 @@ func (c *AgentClient) getDialOptions() ([]grpc.DialOption, derrors.Error) {
 		}
 
 		tlsConfig := &tls.Config{
-			RootCAs: pool,
-			ServerName: "", // we don't need to check the serverName
+			RootCAs:            pool,
+			ServerName:         "", // we don't need to check the serverName
 			InsecureSkipVerify: c.opts.Insecure,
 		}
 

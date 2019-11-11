@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package inventory
@@ -30,11 +43,11 @@ func NewInventory() (*Inventory, derrors.Error) {
 	return i, nil
 }
 
-func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
+func (i *Inventory) GetRequest() *grpc_edge_controller_go.AgentJoinRequest {
 	netInfo := make([]*grpc_inventory_go.NetworkingHardwareInfo, 0, len(i.Network))
-	for _, iface := range(i.Network) {
+	for _, iface := range i.Network {
 		grpcIface := &grpc_inventory_go.NetworkingHardwareInfo{
-			Type: iface.Port,
+			Type:         iface.Port,
 			LinkCapacity: int64(iface.Speed),
 		}
 		netInfo = append(netInfo, grpcIface)
@@ -45,16 +58,16 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 		for count := uint(0); count < i.CPU.Cpus; count++ {
 			cpuInfo = append(cpuInfo, &grpc_inventory_go.CPUInfo{
 				Manufacturer: i.CPU.Vendor,
-				Model: i.CPU.Model,
-				NumCores: int32(i.CPU.Cores),
+				Model:        i.CPU.Model,
+				NumCores:     int32(i.CPU.Cores),
 			})
 		}
 	}
 
 	storageInfo := make([]*grpc_inventory_go.StorageHardwareInfo, 0, len(i.Storage))
-	for _, s := range(i.Storage) {
+	for _, s := range i.Storage {
 		grpcStorage := &grpc_inventory_go.StorageHardwareInfo{
-			Type: fmt.Sprintf("%s %s", s.Vendor, s.Model),
+			Type:          fmt.Sprintf("%s %s", s.Vendor, s.Model),
 			TotalCapacity: int64(s.Size),
 		}
 		storageInfo = append(storageInfo, grpcStorage)
@@ -77,7 +90,7 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 	}
 
 	// Unset empty ones
-	for k, v := range(labels) {
+	for k, v := range labels {
 		if v == "" {
 			delete(labels, k)
 		}
@@ -95,7 +108,7 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 	}
 
 	hardware := &grpc_inventory_go.HardwareInfo{
-		Cpus: cpuInfo,
+		Cpus:          cpuInfo,
 		NetInterfaces: netInfo,
 	}
 	if i.Memory != nil {
@@ -103,10 +116,10 @@ func (i *Inventory) GetRequest() (*grpc_edge_controller_go.AgentJoinRequest) {
 	}
 
 	request := &grpc_edge_controller_go.AgentJoinRequest{
-		Labels: labels,
-		Os: os,
+		Labels:   labels,
+		Os:       os,
 		Hardware: hardware,
-		Storage: storageInfo,
+		Storage:  storageInfo,
 	}
 
 	return request

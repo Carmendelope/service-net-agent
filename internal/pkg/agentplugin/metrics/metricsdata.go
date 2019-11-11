@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package metrics
@@ -21,12 +34,12 @@ import (
 
 type MetricsData struct {
 	Timestamp time.Time
-	Metrics []*Metric
+	Metrics   []*Metric
 }
 
 type Metric struct {
-	Name string
-	Tags map[string]string
+	Name   string
+	Tags   map[string]string
 	Fields map[string]uint64
 }
 
@@ -37,12 +50,12 @@ func NewMetric(name string, tags map[string]string, fields map[string]interface{
 	}
 
 	metric := &Metric{
-		Name: name,
-		Tags: tags,
+		Name:   name,
+		Tags:   tags,
 		Fields: make(map[string]uint64, len(fields)),
 	}
 
-	for key, val := range(fields) {
+	for key, val := range fields {
 		var intVal uint64
 		switch v := val.(type) {
 		// Supporting plugins with different value types requires
@@ -74,10 +87,10 @@ func (d *MetricsData) ToGRPC() *grpc_edge_controller_go.PluginData {
 	}
 
 	grpcMetrics := make([]*grpc_edge_controller_go.MetricsPluginData_Metric, 0, len(d.Metrics))
-	for _, m := range(d.Metrics) {
+	for _, m := range d.Metrics {
 		grpcMetric := &grpc_edge_controller_go.MetricsPluginData_Metric{
-			Name: m.Name,
-			Tags: m.Tags,
+			Name:   m.Name,
+			Tags:   m.Tags,
 			Fields: m.Fields,
 		}
 		grpcMetrics = append(grpcMetrics, grpcMetric)
@@ -88,7 +101,7 @@ func (d *MetricsData) ToGRPC() *grpc_edge_controller_go.PluginData {
 		Data: &grpc_edge_controller_go.PluginData_MetricsData{
 			MetricsData: &grpc_edge_controller_go.MetricsPluginData{
 				Timestamp: d.Timestamp.UTC().Unix(),
-				Metrics: grpcMetrics,
+				Metrics:   grpcMetrics,
 			},
 		},
 	}

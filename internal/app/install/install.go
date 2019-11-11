@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package install
@@ -25,15 +38,17 @@ type Installer struct {
 }
 
 type InstallCommandType string
+
 const (
-	InstallCommand InstallCommandType = "install"
+	InstallCommand   InstallCommandType = "install"
 	UninstallCommand InstallCommandType = "uninstall"
 )
+
 func (i InstallCommandType) String() string {
 	return string(i)
 }
 
-func (i *Installer) Validate() (derrors.Error) {
+func (i *Installer) Validate() derrors.Error {
 	if i.Config.Path == "" {
 		return derrors.NewInvalidArgumentError("path must be specified")
 	}
@@ -46,7 +61,7 @@ func (i *Installer) Print() {
 	log.Info().Str("path", i.Config.Path).Msg("installation path")
 }
 
-func (i *Installer) Run(command InstallCommandType) (derrors.Error) {
+func (i *Installer) Run(command InstallCommandType) derrors.Error {
 	i.Print()
 
 	switch command {
@@ -59,7 +74,7 @@ func (i *Installer) Run(command InstallCommandType) (derrors.Error) {
 	}
 }
 
-func (i *Installer) Install() (derrors.Error) {
+func (i *Installer) Install() derrors.Error {
 	// Create destination
 	destDir := filepath.Join(i.Config.Path, defaults.BinDir)
 	err := os.MkdirAll(destDir, 0755)
@@ -114,7 +129,7 @@ func (i *Installer) Install() (derrors.Error) {
 // - Stop the system service
 // - Disable and remove the system service
 // - Delete the configuration file
-func (i *Installer) Uninstall() (derrors.Error) {
+func (i *Installer) Uninstall() derrors.Error {
 	svcInstaller, derr := svcmgr.NewInstaller(defaults.AgentName, i.Config.Path)
 	if derr != nil {
 		return derr

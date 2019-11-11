@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package run
@@ -24,12 +37,12 @@ type Service struct {
 	Config *config.Config
 	Client *client.AgentClient
 
-	stopChan chan struct{}
+	stopChan    chan struct{}
 	disableChan chan struct{}
-	lastBeat time.Time
+	lastBeat    time.Time
 }
 
-func (s *Service) Validate() (derrors.Error) {
+func (s *Service) Validate() derrors.Error {
 	if s.Config.GetString("agent.token") == "" {
 		return derrors.NewFailedPreconditionError("no token found - agent not joined to edge controller")
 	}
@@ -47,9 +60,9 @@ func (s *Service) Validate() (derrors.Error) {
 }
 
 // Restart previously running plugins
-func (s *Service) RestartPlugins() (derrors.Error) {
+func (s *Service) RestartPlugins() derrors.Error {
 	plugins := s.Config.GetStringMap(plugin.DefaultPluginPrefix)
-	for k, _ := range(plugins) {
+	for k, _ := range plugins {
 		conf := s.Config.Sub(fmt.Sprintf("%s.%s", plugin.DefaultPluginPrefix, k))
 		if !conf.GetBool("enabled") {
 			continue
@@ -63,7 +76,7 @@ func (s *Service) RestartPlugins() (derrors.Error) {
 	return nil
 }
 
-func (s *Service) StartCorePlugin() (derrors.Error) {
+func (s *Service) StartCorePlugin() derrors.Error {
 	// We pass ourselves in the config, so that the core plugin can
 	// control the service
 	conf := viper.New()
@@ -78,7 +91,7 @@ func (s *Service) StartCorePlugin() (derrors.Error) {
 	return nil
 }
 
-func (s *Service) Run() (derrors.Error) {
+func (s *Service) Run() derrors.Error {
 	if s.Client == nil {
 		return derrors.NewInvalidArgumentError("client not set")
 	}
@@ -112,9 +125,9 @@ func (s *Service) Run() (derrors.Error) {
 	}
 
 	beater := Beater{
-		client: s.Client,
+		client:     s.Client,
 		dispatcher: dispatcher,
-		assetId: assetId,
+		assetId:    assetId,
 	}
 
 	// Start main heartbeat ticker
@@ -187,7 +200,7 @@ func (s *Service) Stop() {
 func (s *Service) Alive() (bool, derrors.Error) {
 	// If last successfull main loop run is longer than twice the heartbeat
 	// interval ago, we are not alive
-	if time.Since(s.lastBeat) > 2 * s.Config.GetDuration("agent.interval") {
+	if time.Since(s.lastBeat) > 2*s.Config.GetDuration("agent.interval") {
 		return false, nil
 	}
 	return true, nil

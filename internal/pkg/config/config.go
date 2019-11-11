@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 // Agent configuration file management
@@ -22,9 +35,9 @@ import (
 )
 
 type Config struct {
-	Path string
+	Path       string
 	ConfigFile string
-	LogFile string
+	LogFile    string
 
 	// For plugins - calling write on a subtree will call write on parent
 	parent *Config
@@ -35,10 +48,9 @@ type Config struct {
 	writeLock sync.Mutex
 
 	*viper.Viper
-
 }
 
-func NewConfig() (*Config) {
+func NewConfig() *Config {
 	c := &Config{
 		Viper: viper.New(),
 	}
@@ -50,7 +62,7 @@ func NewConfig() (*Config) {
 	return c
 }
 
-func (c *Config) Read() (derrors.Error) {
+func (c *Config) Read() derrors.Error {
 	log.Info().Str("file", c.ConfigFile).Msg("reading configuration file")
 
 	// Pass filename to Viper
@@ -77,9 +89,9 @@ func (c *Config) GetSubConfig(prefix string) *Config {
 	}
 
 	config := &Config{
-		parent: c,
+		parent:   c,
 		childKey: prefix,
-		Viper: sub,
+		Viper:    sub,
 	}
 
 	return config
@@ -102,7 +114,7 @@ func (c *Config) ReplaceSubtree(prefix string, config *viper.Viper) {
 }
 
 func (c *Config) mergeSubtreeLocked(prefix string, config *viper.Viper) {
-	for k, v := range(config.AllSettings()) {
+	for k, v := range config.AllSettings() {
 		c.Set(fmt.Sprintf("%s.%s", prefix, k), v)
 	}
 }
@@ -143,8 +155,8 @@ func (c *Config) unsetLocked(key string) {
 	// Viper is not meant for deleting keys - we deep-copy everything,
 	// skipping keys that match
 	newConf := viper.New()
-	for _, k := range(c.AllKeys()) {
-		if k == key || strings.HasPrefix(k, key + ".") {
+	for _, k := range c.AllKeys() {
+		if k == key || strings.HasPrefix(k, key+".") {
 			continue
 		}
 		newConf.Set(k, c.Get(k))
@@ -193,7 +205,7 @@ func (c *Config) Write() derrors.Error {
 
 func (c *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
-	for _, key := range(c.AllKeys()) {
+	for _, key := range c.AllKeys() {
 		val := c.Get(key)
 
 		// Don't print secrets

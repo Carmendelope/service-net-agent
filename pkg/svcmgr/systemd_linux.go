@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 // Service manager - interface to systemd and Windows API
@@ -28,24 +41,24 @@ const (
 
 	// Relative unit path
 	systemDUnitPath = "systemd/system"
-	systemDUnitExt = "service"
+	systemDUnitExt  = "service"
 
-	sectionUnit = "Unit"
+	sectionUnit    = "Unit"
 	sectionService = "Service"
 	sectionInstall = "Install"
 
-	nameDescription = "Description"
-	nameAfter = "After"
-	nameType = "Type"
+	nameDescription  = "Description"
+	nameAfter        = "After"
+	nameType         = "Type"
 	nameNotifyAccess = "NotifyAccess"
-	nameRestart = "Restart"
-	nameExecStart = "ExecStart"
-	nameWantedBy = "WantedBy"
-	nameWatchdogSec = "WatchdogSec"
+	nameRestart      = "Restart"
+	nameExecStart    = "ExecStart"
+	nameWantedBy     = "WantedBy"
+	nameWatchdogSec  = "WatchdogSec"
 
-	valueNetwork = "network.target"
-	valueNotify = "notify"
-	valueMain = "main"
+	valueNetwork   = "network.target"
+	valueNotify    = "notify"
+	valueMain      = "main"
 	valueOnFailure = "on-failure"
 	valueMultiUser = "multi-user.target"
 )
@@ -95,7 +108,7 @@ func enableUnit(unit string) derrors.Error {
 		return derrors.NewInternalError("unable to enable system service", err)
 	}
 
-	for _, s := range(status) {
+	for _, s := range status {
 		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
 	}
 
@@ -121,7 +134,7 @@ func disableUnit(servicename string) derrors.Error {
 		return derrors.NewInternalError("unable to disable system service", err)
 	}
 
-	for _, s := range(status) {
+	for _, s := range status {
 		log.Debug().Str("type", s.Type).Str("link", s.Filename).Str("unit", s.Destination).Msg("service status changed")
 	}
 

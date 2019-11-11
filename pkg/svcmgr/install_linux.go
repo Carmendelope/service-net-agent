@@ -1,5 +1,18 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 // Service manager - systemd implementation for linux
@@ -37,7 +50,7 @@ func NewInstaller(name, root string) (*Installer, derrors.Error) {
 }
 
 // Install a service
-func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.Error) {
+func (i *Installer) Install(bin string, args []string, desc ...string) derrors.Error {
 	log.Debug().Str("name", i.name).Str("bin", bin).Msg("installing service")
 
 	// Check if exists and executable
@@ -79,7 +92,7 @@ func (i *Installer) Install(bin string, args []string, desc ...string) (derrors.
 }
 
 // Remove system service
-func (i *Installer) Remove() (derrors.Error) {
+func (i *Installer) Remove() derrors.Error {
 	// Since we've created the unit file in our own path, enabling created
 	// a symlink in /etc/systemd/system. Disabling will remove that symlink
 	// so there's no need to explicitly remove. The unit file will get
@@ -88,7 +101,7 @@ func (i *Installer) Remove() (derrors.Error) {
 }
 
 // Enable system service
-func (i *Installer) Enable() (derrors.Error) {
+func (i *Installer) Enable() derrors.Error {
 	log.Debug().Str("name", i.name).Msg("enabling system service")
 
 	// Determine unit filename
@@ -107,7 +120,7 @@ func (i *Installer) Enable() (derrors.Error) {
 }
 
 // Disable system service
-func (i *Installer) Disable() (derrors.Error) {
+func (i *Installer) Disable() derrors.Error {
 	log.Debug().Str("name", i.name).Msg("disabling system service")
 	return disableUnit(i.name)
 }
