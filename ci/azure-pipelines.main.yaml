@@ -5,7 +5,7 @@ variables:
   - name: GOBIN
     value: '$(GOPATH)/bin'
   - name: GOROOT
-    value: '/usr/local/go1.12'
+    value: '/usr/local/go1.13'
   - name: GOPATH
     value: '$(system.defaultWorkingDirectory)/gopath'
   - name: modulePath
@@ -17,13 +17,13 @@ resources:
       type: github
       name: nalej/ci-templates
       endpoint: nalej
-      tags: v1.0.1
+      ref: refs/tags/v1.0.3
 
 jobs:
 - job: MainWorkflow
 
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   
   steps:
   - template: misc/variables.yaml@ci_templates
